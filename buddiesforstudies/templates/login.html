@@ -1,0 +1,17 @@
+{% load socialaccount %}
+<html>
+
+<body>
+    {% if user.is_authenticated %}
+    <h1>Study Buddy Finder</h1>
+    <p></p>"It's like tinder, but for finding people to study with"</p>
+    <p>Welcome, {{ user.username }} !</p>
+
+    {% else %}
+    <h1>Study Buddy Finder</h1>
+    <a href="{% provider_login_url 'google' %}">Login with Google</a>
+    {% endif %}
+
+</body>
+
+</html>
