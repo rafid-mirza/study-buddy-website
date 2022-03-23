@@ -7,6 +7,7 @@
         </header>
         <form action = "{% url 'submit' %}" method = "POST">
             {% csrf_token %}
+            {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
             Class Title: <input type="text" name="title">
             <input type="submit" value="Add">
         </form>

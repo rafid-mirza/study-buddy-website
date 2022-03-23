@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
-from .models import classes
+from .models import classes, jsonData
 
 
 def index(request):
@@ -16,7 +16,10 @@ def submit(request):
     try:
         classes.objects.get(title = request.POST['title'], user = request.user)
     except (KeyError, classes.DoesNotExist):
-        aclass.save()
+        if (aclass.title in jsonData.objects.get(label="classes").classes_list):
+            aclass.save()
+        else:
+            return render(request, 'add_class.html', {'error_message': "That class does not exist."})
     return HttpResponseRedirect(reverse('index'))
 
 def remove_class(request):
@@ -27,7 +30,7 @@ def remove(request):
     try:
         aclass = classes.objects.get(title = request.POST['choice'], user = request.user)
     except (KeyError, classes.DoesNotExist):
-        # Redisplay the question voting form.
+        # Redisplay the class removing form.
         return render(request, 'remove_class.html', {'error_message': "You didn't select a class."})
     else:
         aclass.delete()
