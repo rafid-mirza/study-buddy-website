@@ -1,7 +1,7 @@
 {% load socialaccount %}
 <html>
   <head>
-    <title>Google Authentication with Django</title>
+    <title>Buddies for Studdies Home</title>
   </head>
 <body>
     {% if user.is_authenticated %}
@@ -12,9 +12,13 @@
         <h3>My Classes:</h3>
       </header>
       <ul>
-        {% for class in user.classes_set.all %}
-          <li>{{class}}</li>
-        {% endfor %}
+        {% if user.classes_set.all %}
+          {% for class in user.classes_set.all %}
+            <li>{{class}}</li>
+          {% endfor %}
+        {% else %}
+          <p>You do not have any classes added</p>
+        {% endif %}
         <a href="{% url 'add_class' %}">Add a Class</a>
         <a href="{% url 'remove_class' %}">Remove a Class</a>
       </ul>
