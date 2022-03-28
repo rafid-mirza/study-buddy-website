@@ -1,0 +1,36 @@
+{% load socialaccount %}
+<html>
+  <head>
+    <title>Buddies for Studdies Home</title>
+  </head>
+<body>
+    {% if user.is_authenticated %}
+      <h1>Study Buddy Finder</h1>
+      <p></p>"It's like tinder, but for finding people to study with"</p>
+      <p>Welcome, {{ user.username }}!</p>
+      <header>
+        <h3>My Classes:</h3>
+      </header>
+      <ul>
+        {% if user.classes_set.all %}
+          {% for class in user.classes_set.all %}
+            <li>{{class}}</li>
+          {% endfor %}
+        {% else %}
+          <p>You do not have any classes added</p>
+        {% endif %}
+        <a href="{% url 'add_class' %}">Add a Class</a>
+        <a href="{% url 'remove_class' %}">Remove a Class</a>
+      </ul>
+      <a target="_black" href="admin">admin</a>
+      <a href="{% url 'logout' %}">Logout</a>
+
+    {% else %}
+      <h1>Study Buddy Finder</h1>
+      <a href="{% provider_login_url 'google' %}">Log In</a>
+
+    {% endif %}
+
+</body>
+
+</html>
