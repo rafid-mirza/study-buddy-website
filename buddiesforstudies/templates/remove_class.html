@@ -1,0 +1,29 @@
+{% load socialaccount %}
+<html>
+<body>
+    {% if user.is_authenticated %}
+        <header>
+        <h3>Remove a Class:</h3>
+        </header>
+        <form action="{% url 'remove' %}" method="post">
+            {% csrf_token %}
+            <fieldset>
+                {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+                {% for class in user.classes_set.all %}
+                    <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ class }}">
+                    <label for="choice{{ forloop.counter }}">{{ class }}</label><br>
+                {% endfor %}
+            </fieldset>
+            <input type="submit" value="Remove">
+            </form>
+        <a href="{% url 'index' %}">Cancel</a>
+
+    {% else %}
+        <h1>Study Buddy Finder</h1>
+        <a href="{% provider_login_url 'google' %}">Login with Google</a>
+
+    {% endif %}
+
+</body>
+
+</html>

@@ -1,0 +1,24 @@
+{% load socialaccount %}
+<html>
+<body>
+    {% if user.is_authenticated %}
+        <header>
+        <h3>Add a Class:</h3>
+        </header>
+        <form action = "{% url 'submit' %}" method = "POST">
+            {% csrf_token %}
+            {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+            Class Title: <input type="text" name="title">
+            <input type="submit" value="Add">
+        </form>
+        <a href="{% url 'index' %}">Cancel</a>
+
+    {% else %}
+        <h1>Study Buddy Finder</h1>
+        <a href="{% provider_login_url 'google' %}">Login with Google</a>
+
+    {% endif %}
+
+</body>
+
+</html>
