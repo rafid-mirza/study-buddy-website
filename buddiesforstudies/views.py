@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+
 from .models import classes, jsonData
 
 
@@ -35,3 +36,8 @@ def remove(request):
     else:
         aclass.delete()
         return HttpResponseRedirect(reverse('index'))
+
+def maps(request):
+    mapbox_access_token = 'pk.eyJ1Ijoicm1pcnphIiwiYSI6ImNsMWp1MnBzOTI0djkza25zMW11bWtrcTAifQ.oLnPBR5Sqs8hkhnMzjAbVQ'
+    return render(request, 'maps.html', 
+                  { 'mapbox_access_token': mapbox_access_token })

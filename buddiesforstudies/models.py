@@ -22,3 +22,4 @@ class jsonData(models.Model):
     classes_list = []
     for list in data["class_schedules"]["records"]:
         classes_list.append(list[0] + " " + list[1])
+

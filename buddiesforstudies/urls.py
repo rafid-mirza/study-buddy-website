@@ -12,4 +12,5 @@ urlpatterns = [
     path('classes/submit', views.submit, name='submit'),
     path('removeclass', views.remove_class, name = 'remove_class'),
     path('classes/remove', views.remove, name='remove'),
+    path('maps', views.maps, name = 'maps'),
 ]

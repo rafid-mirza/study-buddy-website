@@ -178,3 +178,5 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     }
 }
+
+MAPBOX_KEY = 'pk.eyJ1Ijoicm1pcnphIiwiYSI6ImNsMWp1MnBzOTI0djkza25zMW11bWtrcTAifQ.oLnPBR5Sqs8hkhnMzjAbVQ'
