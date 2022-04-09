@@ -8,22 +8,34 @@
       <h1>Study Buddy Finder</h1>
       <p></p>"It's like tinder, but for finding people to study with"</p>
       <p>Welcome, {{ user.username }}!</p>
+      <a target="_black" href="admin">admin</a>
+      <a href="{% url 'logout' %}">Logout</a>
       <header>
         <h3>My Classes:</h3>
       </header>
-      <ul>
         {% if user.classes_set.all %}
+          <ul>
           {% for class in user.classes_set.all %}
             <li>{{class}}</li>
           {% endfor %}
+      </ul>
         {% else %}
           <p>You do not have any classes added</p>
         {% endif %}
-        <a href="{% url 'add_class' %}">Add a Class</a>
-        <a href="{% url 'remove_class' %}">Remove a Class</a>
-      </ul>
-      <a target="_black" href="admin">admin</a>
-      <a href="{% url 'logout' %}">Logout</a>
+        <h3>My Toggled Classes:</h3>
+          {% if user.toggled_classes_set.all %}
+            <ul>
+            {% for class in user.toggled_classes_set.all %}
+              <li>{{class}}</li>
+          {% endfor %}
+        </ul>
+        {% else %}
+          <p>You do not have any classes toggled</p>
+        {% endif %}
+      <a href="{% url 'add_class' %}">Add a Class</a>
+      <a href="{% url 'remove_class' %}">Remove a Class</a>
+      <a href="{% url 'toggle_class' %}"> Toggle Classes</a>
+      <a href="{% url 'untoggle_class' %}"> Untoggle Classes</a>
 
     {% else %}
       <h1>Study Buddy Finder</h1>
