@@ -32,7 +32,7 @@ def remove(request):
         aclass2 = toggled_classes.objects.get(title=request.POST['choice'], user=request.user)
     except (KeyError, classes.DoesNotExist):
         # Redisplay the class removing form.
-        return render(request, 'remove_class.html', {'error_message': "You didn't select a class."})
+        return render(request, 'remove_class.html', {'error_message': "You did not select a class."})
     except toggled_classes.DoesNotExist:
         aclass.delete()
         return HttpResponseRedirect(reverse('index'))
@@ -49,7 +49,7 @@ def toggle(request):
     if request.method == 'POST':
         choice = request.POST.getlist('choice')
         if not choice:
-            return render(request, 'toggle_class.html', {'error_message': "You didn't select a class."})
+            return render(request, 'toggle_class.html', {'error_message': "You did not select a class."})
         else:
             for i in choice:
                 if toggled_classes.objects.filter(title=i,user=request.user).exists():
@@ -66,7 +66,7 @@ def untoggle(request):
     if request.method == 'POST':
         choice = request.POST.getlist('choice')
         if not choice:
-            return render(request, 'untoggle_class.html', {'error_message': "You didn't select a class."})
+            return render(request, 'untoggle_class.html', {'error_message': "You did not select a class."})
         else:
             for i in choice:
                     class_to_untoggle = toggled_classes.objects.get(title = i, user = request.user)

@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model, authenticate
 from django.urls import reverse
-from .models import jsonData, toggled_classes
+from .models import jsonData, toggled_classes, classes
 
 
 class PracticeTests(TestCase):
@@ -163,7 +163,23 @@ class UntoggleClassTests(TestCase):
         qs = toggled_classes.objects.all()
         self.assertQuerysetEqual(list(qs),['<toggled_classes: CS 3240>', '<toggled_classes: CS 3102>', '<toggled_classes: CS 4414>'])
 
-        choice = ['CS 3102', 'CS 4414']
-        self.client.post(reverse('untoggle'),{'choice':choice})
+        choice2 = ['CS 3240']
+        response1 = self.client.post(reverse('toggle'), {'choice': choice2})
+        self.assertContains(response1, 'One or more of these classes has already been toggled.')
+
+        choice3 = ['CS 4414', 'CS 3102']
+        response2 = self.client.post(reverse('toggle'), {'choice': choice3})
+        self.assertContains(response2, 'One or more of these classes has already been toggled.')
+
+        choice4 = []
+        response3 = self.client.post(reverse('toggle'), {'choice': choice4})
+        self.assertContains(response3, 'You did not select a class.')
+
+        choice5 = ['CS 3102', 'CS 4414']
+        self.client.post(reverse('untoggle'),{'choice':choice5})
         qs1 = toggled_classes.objects.all()
         self.assertQuerysetEqual(list(qs1),['<toggled_classes: CS 3240>'])
+
+        choice6 = []
+        response4 = self.client.post(reverse('untoggle'), {'choice': choice6})
+        self.assertContains(response4, 'You did not select a class.')
