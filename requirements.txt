@@ -3,4 +3,4 @@ gunicorn
 django-heroku
 django-bootstrap-v5
 django-allauth
-django-location-field
+django-mapbox-location-field
