@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'mapbox_location_field',
 ]
 
 MIDDLEWARE = [
@@ -180,3 +181,4 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 MAPBOX_KEY = 'pk.eyJ1Ijoicm1pcnphIiwiYSI6ImNsMWp1MnBzOTI0djkza25zMW11bWtrcTAifQ.oLnPBR5Sqs8hkhnMzjAbVQ'
+

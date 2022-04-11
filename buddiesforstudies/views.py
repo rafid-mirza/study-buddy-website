@@ -1,8 +1,9 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.views.generic import CreateView
 
-from .models import classes, jsonData
+from .models import classes, jsonData, Location
 
 
 def index(request):
@@ -37,7 +38,8 @@ def remove(request):
         aclass.delete()
         return HttpResponseRedirect(reverse('index'))
 
-def maps(request):
-    mapbox_access_token = 'pk.eyJ1Ijoicm1pcnphIiwiYSI6ImNsMWp1MnBzOTI0djkza25zMW11bWtrcTAifQ.oLnPBR5Sqs8hkhnMzjAbVQ'
-    return render(request, 'maps.html', 
-                  { 'mapbox_access_token': mapbox_access_token })
+class AddLocationView(CreateView):
+    model = Location
+    template_name = "maps.html"
+    success_url = "/buddiesforstudies/maps"
+    fields = ("location", "address")
