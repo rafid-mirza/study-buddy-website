@@ -2,6 +2,13 @@ from django.db import models
 from django.contrib.auth.models import User
 import requests
 from django import forms
+from mapbox_location_field.models import LocationField, AddressAutoHiddenField
+
+class Location(models.Model):  
+    location = LocationField( map_attrs={"center": (-78.50, 38.04)})
+    address = AddressAutoHiddenField(default = "")
+    def __str__(self):
+        return self.address 
 
 
 class user(models.Model):
@@ -29,4 +36,3 @@ class toggled_classes(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     def __str__(self):
         return self.title
-

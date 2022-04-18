@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from .models import classes, jsonData, toggled_classes
+from django.views.generic import CreateView
+from .models import classes, jsonData, toggled_classes, Location
 
 
 def index(request):
@@ -72,6 +73,9 @@ def untoggle(request):
                     class_to_untoggle = toggled_classes.objects.get(title = i, user = request.user)
                     class_to_untoggle.delete()
             return HttpResponseRedirect(reverse('index'))
-
-
-
+          
+class AddLocationView(CreateView):
+    model = Location
+    template_name = "maps.html"
+    success_url = "/buddiesforstudies/maps"
+    fields = ("location", "address")

@@ -16,4 +16,5 @@ urlpatterns = [
     path('classes/toggle', views.toggle, name='toggle'),
     path('untoggleclass', views.untoggle_class, name="untoggle_class"),
     path('classes/untoggle', views.untoggle, name='untoggle'),
+    path('maps', views.AddLocationView.as_view(), name = 'maps'),
 ]
