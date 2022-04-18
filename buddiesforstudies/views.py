@@ -7,6 +7,7 @@ from twilio.jwt.access_token.grants import ChatGrant
 from .models import classes, jsonData, toggled_classes, Room
 from django.views.generic import CreateView
 from .models import classes, jsonData, toggled_classes, Location, user_info
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 def index(request):
@@ -134,11 +135,14 @@ def token(request):
     return JsonResponse(response)
 
           
-class AddLocationView(CreateView):
+class AddLocationView(LoginRequiredMixin, CreateView):
     model = Location
     template_name = "maps.html"
     success_url = "/buddiesforstudies/maps"
-    fields = ("location", "address")
+    fields = ("location", "address", "user_1")
+    def form_valid(self, form):
+        form.instance.user_2 = self.request.user
+        return super().form_valid(form)
 
 
 def major_evaluation(request, candidateusers):
