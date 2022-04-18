@@ -11,24 +11,28 @@ from .models import classes, jsonData, toggled_classes, Room
 def index(request):
     return render(request, 'login.html',{})
 
+
 def add_class(request):
     model = classes
     return render(request, 'add_class.html')
+
 
 def submit(request):
     aclass = classes(title = request.POST['title'], user = request.user)
     try:
         classes.objects.get(title = request.POST['title'], user = request.user)
     except (KeyError, classes.DoesNotExist):
-        if (aclass.title in jsonData.objects.get(label="classes").classes_list):
+        if aclass.title in jsonData.objects.get(label="classes").classes_list:
             aclass.save()
         else:
             return render(request, 'add_class.html', {'error_message': "That class does not exist."})
     return HttpResponseRedirect(reverse('index'))
 
+
 def remove_class(request):
     model = classes
     return render(request, 'remove_class.html')
+
 
 def remove(request):
     try:
@@ -45,9 +49,11 @@ def remove(request):
         aclass2.delete()
         return HttpResponseRedirect(reverse('index'))
 
+
 def toggle_class(request):
     model = toggled_classes
     return render(request, 'toggle_class.html')
+
 
 def toggle(request):
     if request.method == 'POST':
@@ -62,9 +68,12 @@ def toggle(request):
                     class_to_toggle = toggled_classes(title=i, user=request.user)
                     class_to_toggle.save()
             return HttpResponseRedirect(reverse('index'))
+
+
 def untoggle_class(request):
     model = toggled_classes
     return render(request, 'untoggle_class.html')
+
 
 def untoggle(request):
     if request.method == 'POST':
@@ -79,6 +88,7 @@ def untoggle(request):
 
 
 fake = Faker()
+
 
 def all_rooms(request):
     rooms = Room.objects.all()

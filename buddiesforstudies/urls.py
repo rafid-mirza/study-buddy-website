@@ -16,7 +16,7 @@ urlpatterns = [
     path('classes/toggle', views.toggle, name='toggle'),
     path('untoggleclass', views.untoggle_class, name="untoggle_class"),
     path('classes/untoggle', views.untoggle, name='untoggle'),
-    path('rooms', views.all_rooms, name="all_rooms"),
-    re_path('rooms/token$', views.token, name="token"),
+    re_path(r'rooms/^$', views.all_rooms, name="all_rooms"),
+    re_path(r'rooms/token$', views.token, name="token"),
     re_path(r'rooms/rooms/(?P<slug>[-\w]+)/$', views.room_detail, name="room_detail"),
 ]
