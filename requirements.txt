@@ -3,4 +3,8 @@ gunicorn
 django-heroku
 django-bootstrap-v5
 django-allauth
+Faker
+twilio
+requests
+PyJWT==1.7.1
 django-mapbox-location-field
