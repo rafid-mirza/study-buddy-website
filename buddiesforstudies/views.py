@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.conf import settings
+from faker import Faker
 from twilio.jwt.access_token import AccessToken
 from twilio.jwt.access_token.grants import ChatGrant
 from .models import classes, jsonData, toggled_classes, Room
@@ -86,6 +87,9 @@ def untoggle(request):
             return HttpResponseRedirect(reverse('index'))
 
 
+fake = Faker()
+
+
 def all_rooms(request):
     rooms = Room.objects.all()
     return render(request, 'room_index.html', {'rooms': rooms})
@@ -97,7 +101,7 @@ def room_detail(request, slug):
 
 
 def token(request):
-    identity = request.user
+    identity = request.GET.get('identity', fake.user_name())
     device_id = request.GET.get('device', 'default')  # unique device ID
 
     account_sid = settings.TWILIO_ACCOUNT_SID
