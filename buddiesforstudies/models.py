@@ -1,9 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 import requests
-from django.db import models
+from django import forms
 from mapbox_location_field.models import LocationField, AddressAutoHiddenField
-
 
 class Location(models.Model):  
     location = LocationField( map_attrs={"center": (-78.50, 38.04)})
@@ -32,3 +31,8 @@ class jsonData(models.Model):
     for list in data["class_schedules"]["records"]:
         classes_list.append(list[0] + " " + list[1])
 
+class toggled_classes(models.Model):
+    title = models.CharField(max_length=128)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    def __str__(self):
+        return self.title

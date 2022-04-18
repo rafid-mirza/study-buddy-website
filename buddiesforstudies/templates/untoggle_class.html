@@ -42,40 +42,40 @@
 
             <div class="container p-4 my-2 border">
                 <header>
-                    <h3>Remove a Class:</h3>
+                    <h3>Untoggle Classes:</h3>
                 </header>
-                <form action="{% url 'remove' %}" method="post">
+                <form action="{% url 'untoggle' %}" method="post">
                     {% csrf_token %}
                     <fieldset>
                         {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-                        {% for class in user.classes_set.all %}
-                            <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ class }}">
+                        {% for class in user.toggled_classes_set.all %}
+                            <input type="checkbox" name="choice" id="choice{{ forloop.counter }}" value="{{ class }}">
                             <label for="choice{{ forloop.counter }}">{{ class }}</label><br>
                         {% endfor %}
                     </fieldset>
-                    <input type="submit" value="Remove">
+                    <input type="submit" value="Submit">
                     </form>
                 <a href="{% url 'index' %}">Cancel</a>
             </div>
 
-        {% else %}
-            <div class="p-3 bg-warning text-black text-left">
-                <h1>Buddies for Studdies Home</h1>
-            </div>
-            <div class="container p-4 my-2 border">
-                <header>
-                <h3>Log In:</h3>
-                </header>
-                <a href="{% provider_login_url 'google' %}">Log In</a>
-            </div>
+    {% else %}
+        <div class="p-3 bg-warning text-black text-left">
+            <h1>Buddies for Studdies Home</h1>
+        </div>
+        <div class="container p-4 my-2 border">
+            <header>
+            <h3>Log In:</h3>
+            </header>
+            <a href="{% provider_login_url 'google' %}">Log In</a>
+        </div>
 
-        {% endif %}
+    {% endif %}
 
-        <footer class="footer mt-auto py-3 bg-light">
-            <div class="container text-center">
-            <span class="text-muted">UVA CS 3240 B-15</span>
-            </div>
-        </footer>
+    <footer class="footer mt-auto py-3 bg-light">
+        <div class="container text-center">
+        <span class="text-muted">UVA CS 3240 B-15</span>
+        </div>
+    </footer>
 
-    </body>
+</body>
 </html>

@@ -1,36 +1,104 @@
+<!DOCTYPE html>
 {% load socialaccount %}
-<html>
+<html lang="en">
   <head>
-    <title>Buddies for Studdies Home</title>
+    <title>Buddies for Studdies</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {# Load the tag library #}
+    {% load bootstrap5 %}
+
+    {# Load CSS and JavaScript #}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
   </head>
-<body>
+
+  <body class="d-flex flex-column min-vh-100">
     {% if user.is_authenticated %}
-      <h1>Study Buddy Finder</h1>
-      <p></p>"It's like tinder, but for finding people to study with"</p>
-      <p>Welcome, {{ user.username }}!</p>
-      <header>
-        <h3>My Classes:</h3>
-      </header>
-      <ul>
+      <div class="p-2 bg-warning text-black text-left">
+        <h1>Buddies for Studdies Home</h1>
+        <p>Welcome, {{ user.username }}!</p>
+      </div>
+
+      <!-- A grey horizontal navbar that becomes vertical on small screens -->
+      <nav class="navbar navbar-expand-sm bg-light">
+        <div class="container-fluid">
+          <!-- Links -->
+          <ul class="navbar-nav">
+            <!-- <li class="nav-item">
+              <a class="nav-link" href="{% url 'index' %}">Classes</a>
+            </li> -->
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'index' %}">Find Matches</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'index' %}">Messages</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="container p-4 my-2 border">
+        <header>
+          <h3>Upcoming Study Sessions:</h3>
+        </header>
+      </div>
+
+      <div class="container p-4 my-2 border">
+        <header>
+          <h3>My Classes:</h3>
+        </header>
         {% if user.classes_set.all %}
+          <ul>
           {% for class in user.classes_set.all %}
             <li>{{class}}</li>
           {% endfor %}
+          </ul>
         {% else %}
           <p>You do not have any classes added</p>
         {% endif %}
         <a href="{% url 'add_class' %}">Add a Class</a>
         <a href="{% url 'remove_class' %}">Remove a Class</a>
-      </ul>
-      <a target="_black" href="admin">admin</a>
-      <a href="{% url 'logout' %}">Logout</a>
+      </div>
+
+      <div class="container p-4 my-2 border">
+        <header>
+          <h3>Toggled Classes:</h3>
+        </header>
+        {% if user.toggled_classes_set.all %}
+          <ul>
+            {% for class in user.toggled_classes_set.all %}
+              <li>{{class}}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>You do not have any classes toggled</p>
+        {% endif %}
+        <a href="{% url 'toggle_class' %}"> Toggle Classes</a>
+        <a href="{% url 'untoggle_class' %}"> Untoggle Classes</a>
+      </div>
 
     {% else %}
-      <h1>Study Buddy Finder</h1>
-      <a href="{% provider_login_url 'google' %}">Log In</a>
+      <div class="p-3 bg-warning text-black text-left">
+        <h1>Buddies for Studdies Home</h1>
+      </div>
+      <div class="container p-4 my-2 border">
+        <header>
+          <h3>Log In:</h3>
+        </header>
+        <a href="{% provider_login_url 'google' %}">Log In</a>
+      </div>
 
     {% endif %}
 
-</body>
+    <footer class="footer mt-auto py-3 bg-light">
+      <div class="container text-center">
+        <span class="text-muted">UVA CS 3240 B-15</span>
+      </div>
+    </footer>
 
+  </body>
 </html>

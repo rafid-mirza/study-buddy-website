@@ -42,18 +42,18 @@
 
             <div class="container p-4 my-2 border">
                 <header>
-                    <h3>Remove a Class:</h3>
+                    <h3>Toggle Classes:</h3>
                 </header>
-                <form action="{% url 'remove' %}" method="post">
+                <form action="{% url 'toggle' %}" method="post">
                     {% csrf_token %}
                     <fieldset>
                         {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
                         {% for class in user.classes_set.all %}
-                            <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ class }}">
+                            <input type="checkbox" name="choice" id="choice{{ forloop.counter }}" value="{{ class }}">
                             <label for="choice{{ forloop.counter }}">{{ class }}</label><br>
                         {% endfor %}
                     </fieldset>
-                    <input type="submit" value="Remove">
+                    <input type="submit" value="Submit">
                     </form>
                 <a href="{% url 'index' %}">Cancel</a>
             </div>
