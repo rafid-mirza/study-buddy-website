@@ -6,6 +6,8 @@ from faker import Faker
 from twilio.jwt.access_token import AccessToken
 from twilio.jwt.access_token.grants import ChatGrant
 from .models import classes, jsonData, toggled_classes, Room
+from django.views.generic import CreateView
+from .models import classes, jsonData, toggled_classes, Location
 
 
 def index(request):
@@ -125,4 +127,11 @@ def token(request):
     }
 
     return JsonResponse(response)
+
+          
+class AddLocationView(CreateView):
+    model = Location
+    template_name = "maps.html"
+    success_url = "/buddiesforstudies/maps"
+    fields = ("location", "address")
 

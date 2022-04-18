@@ -32,7 +32,7 @@ SECRET_KEY = 'django-insecure-3j(ycuh#-0jx!z0=p$!h*d_&(e6^cfn_rwqz=j00h^g*8zi1&e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1','buddiesforstudies.herokuapp.com','jaimebuddiesforstudies.herokuapp.com', 'togglebuddiesforstudies.herokuapp.com']
+ALLOWED_HOSTS = ['localhost','127.0.0.1','buddiesforstudies.herokuapp.com','jaimebuddiesforstudies.herokuapp.com','studiebuddies.herokuapp.com', 'togglebuddiesforstudies.herokuapp.com']
 
 
 # Application definition
@@ -51,10 +51,12 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'mapbox_location_field',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -183,3 +185,6 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     }
 }
+
+MAPBOX_KEY = 'pk.eyJ1Ijoicm1pcnphIiwiYSI6ImNsMWp1MnBzOTI0djkza25zMW11bWtrcTAifQ.oLnPBR5Sqs8hkhnMzjAbVQ'
+

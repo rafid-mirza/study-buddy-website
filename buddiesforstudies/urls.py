@@ -19,4 +19,5 @@ urlpatterns = [
     re_path(r'rooms/$', views.all_rooms, name="all_rooms"),
     re_path(r'rooms/token$', views.token, name="token"),
     re_path(r'rooms/(?P<slug>[-\w]+)/$', views.room_detail, name="room_detail"),
+    path('maps', views.AddLocationView.as_view(), name = 'maps'),
 ]

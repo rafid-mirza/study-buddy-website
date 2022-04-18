@@ -7,3 +7,4 @@ Faker
 twilio
 requests
 PyJWT==1.7.1
+django-mapbox-location-field
