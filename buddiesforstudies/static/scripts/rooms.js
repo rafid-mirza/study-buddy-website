@@ -37,7 +37,7 @@ $(function() {
  }
 
  $.getJSON(
-   "/token",
+   "rooms/token",
    {
      device: "browser"
    },
