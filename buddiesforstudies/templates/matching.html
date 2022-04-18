@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title> It's a Match! </title>
+</head>
+<body>
+
+{% load socialaccount %}
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
+
+{% for u in user.user_info_set.all %}
+
+<div class="container">
+  <div class="row">
+    <div class="col">
+      {% for u in user.user_info_set.all %}
+    <ul>
+        <li> Your Name: {{u.name}}</li>
+        <li> Your Major: {{u.major}}</li>
+        <li> Your Year: {{u.year}}</li>
+        <li> Your Interest: {{u.level_of_seriousness}}</li>
+        <li> Your Classes:
+            <ul>
+            {% for class in user.toggled_classes_set.all %}
+             <li> {{class}}</li>
+                {%endfor%}
+        </ul>
+        {%endfor%}
+     </ul>
+    </div>
+    <div class="col">
+      {% for d in data.user_info_set.all %}
+    <ul>
+        <li> {{d}}</li>
+        <li> {{d}}'s Major: {{d.major}}</li>
+        <li> {{d}}'s Year: {{d.year}}</li>
+        <li> {{d}}'s Interest: {{d.level_of_seriousness}}</li>
+        <li> {{d}}'s Classes:
+            <ul>
+            {% for class in data.toggled_classes_set.all %}
+             <li> {{class}}</li>
+
+        {%endfor%}
+
+        </ul>
+        {%endfor%}
+     </ul>
+    </div>
+  </div>
+</div>
+ <a href="{% url 'index' %}">Home</a>
+
+{%empty%}
+    <p> You need to enter information before getting matching </p>
+        <a href="{% url 'info' %}">Enter Info</a>
+
+    <a href="{% url 'index' %}">Cancel</a>
+
+{%endfor%}
+
+</body>
+</html>

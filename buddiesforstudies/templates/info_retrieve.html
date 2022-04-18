@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{user.username}} information</title>
+</head>
+<body>
+
+<ul>
+    {% for u in user.user_info_set.all %}
+    <p> You've already entered user information! </p>
+        <a href="{% url 'index' %}">Cancel</a>
+    {% empty %}
+        <form action = "{% url 'info_submit' %}" method = "POST">
+            {% csrf_token %}
+            {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+            <ul>
+                <li>
+            My Name: <input type="text" name="name">
+                    </li> <li>
+            My Major: <input type="text" name="major">
+                </li> <li>
+            My Year: <input type="text" name="year">
+                </li> <li>
+            My seriousness: <input type="text" name="seriousness">
+                </li>
+                </ul>
+            <input type="submit" value="Confirm!">
+        </form>
+        <a href="{% url 'index' %}">Cancel</a>
+
+    {% endfor %}
+</ul>
+
+
+
+</body>
+</html>

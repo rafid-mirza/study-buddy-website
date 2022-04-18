@@ -6,11 +6,20 @@ from twilio.jwt.access_token import AccessToken
 from twilio.jwt.access_token.grants import ChatGrant
 from .models import classes, jsonData, toggled_classes, Room
 from django.views.generic import CreateView
-from .models import classes, jsonData, toggled_classes, Location
+from .models import classes, jsonData, toggled_classes, Location, user_info
 
 
 def index(request):
     return render(request, 'login.html',{})
+
+def input_information(request):
+    model = user_info
+    return render(request, 'info_retrieve.html')
+
+def info_submit(request):
+    ainfo = user_info(major = request.POST.get('major', 'computer science'), level_of_seriousness = request.POST.get('seriousness', '10'), name = request.POST.get('name', 'John Doe'), year = request.POST.get('year', '1'), user = request.user)
+    ainfo.save()
+    return HttpResponseRedirect(reverse('matching'))
 
 
 def add_class(request):
@@ -130,4 +139,85 @@ class AddLocationView(CreateView):
     template_name = "maps.html"
     success_url = "/buddiesforstudies/maps"
     fields = ("location", "address")
+
+
+def major_evaluation(request, candidateusers):
+    second = majormatch(request, candidateusers)
+    if len(second) == 1:  # if the length of this output is only one, return it
+        return render(request, 'matching.html', {'data': second[0]})
+    elif len(second) < 1:  # if none of the same major
+        finalmatch = interestmatch(request, candidateusers)  # evaluate list by major
+        return render(request, 'matching.html', {'data': finalmatch}, )  # return the highest similar interest
+    else:
+        finalmatch = interestmatch(request, second)  # if multiple same major, evaluate that list by intereest
+        return render(request, 'matching.html', {'data': finalmatch}, )
+
+def majormatch(request, candiateusers):
+    same_major = []
+    for candidate in candiateusers:
+        if request.user.user_info_set.all()[0].major == candidate.user_info_set.all()[0].major:
+            if (request.user != candidate):
+                same_major.append(candidate)
+    return same_major
+
+def interestmatch(request, candidateusers):
+    closest_interest = 1000000000
+    match = None
+    for candidate in candidateusers:
+        similarity = abs(int(request.user.user_info_set.all()[0].level_of_seriousness) - int(candidate.user_info_set.all()[0].level_of_seriousness))
+        if similarity < closest_interest:
+            closest_interest = similarity
+            match = candidate
+    return match
+
+
+def match(request):
+    data = user_info.objects.all()
+    class_count = {}
+    for d in data: # for all the users that have entered info # don't compare against self
+        if d.user != request.user:
+            for c in d.user.toggled_classes_set.all(): # for every class they've inputted
+                for cl in request.user.toggled_classes_set.all(): # if there's a match with the user's class
+                    if c.title == cl.title:
+                        if c.user not in class_count.keys():# if this user does not have classes yet, initialize count
+                            class_count[c.user] = 1
+                        else:
+                            class_count[c.user] = class_count.get(c.user,0) +1 #otherwise, increase it by 1
+
+    if len(class_count) == 1:
+        return render(request, 'matching.html', {'data': list(class_count.keys())[0]})
+
+    if len(class_count) > 1:# if more than one class
+        same_classes = True
+        i = 1
+        classes = list(class_count.values())# evaluate all the counts
+        highest_classes = classes[i-1]
+        while i < len(classes):# if at any point not all the classes counts are the same
+            if classes[i] != classes[i-1]:
+                same_classes =False # we don't have the same number of classes
+            if highest_classes < classes[i]: # update global variable
+                highest_classes = classes[i]
+            i+=1
+        if same_classes: # if all the same, evaluate by majors
+            return major_evaluation(request, list(class_count.keys()))
+
+        else:# if all different numbers of classes
+            most_class = []
+            for c in class_count.keys(): # only pay attention to the highest ones
+                if class_count[c] == highest_classes:
+                    most_class.append(c)
+            if len(most_class) == 1:# if only one has the most, return that
+                return render(request, 'matching.html', {'data': most_class[0]})
+            else:# otherwise, match based on major
+               return major_evaluation(request, most_class)
+    else:
+        # otherwise, there are no classes, so let's evaluate by major
+        noclass_candidates = []
+        for d in data:
+            if (d.user!= request.user):
+                noclass_candidates.append(d.user)
+
+        second = majormatch(request, noclass_candidates)
+        return major_evaluation(request, second)
+
 

@@ -8,7 +8,18 @@ class Location(models.Model):
     location = LocationField( map_attrs={"center": (-78.50, 38.04)})
     address = AddressAutoHiddenField(default = "")
     def __str__(self):
-        return self.address 
+        return self.address
+
+
+class user_info(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name =  models.CharField(max_length=128)
+    year = models.CharField(max_length=1)
+    major = models.CharField(max_length=128)
+    level_of_seriousness =  models.CharField(max_length=2)
+
+    def __str__(self):
+        return self.name
 
 
 class user(models.Model):
