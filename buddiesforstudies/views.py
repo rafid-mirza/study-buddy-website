@@ -172,6 +172,8 @@ def interestmatch(request, candidateusers):
 
 
 def match(request):
+    if len(list(request.user.user_info_set.all())) == 0:
+        return HttpResponseRedirect(reverse('info'))
     data = user_info.objects.all()
     class_count = {}
     for d in data: # for all the users that have entered info # don't compare against self
