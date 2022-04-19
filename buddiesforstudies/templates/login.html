@@ -45,6 +45,15 @@
         <header>
           <h3>Upcoming Study Sessions:</h3>
         </header>
+        {% if user.location_set.all %}
+          <ul>
+          {% for location in user.location_set.all %}
+            <li>{{location}}</li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          <p>You do not have any sessions scheduled</p>
+        {% endif %}
       </div>
 
       <div class="container p-4 my-2 border">
