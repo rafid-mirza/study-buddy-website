@@ -45,9 +45,12 @@
         <header>
           <h3>Upcoming Study Sessions:</h3>
         </header>
-        {% if user.location_set.all %}
+        {% if user.user_2.all or user.user_1.all %}
           <ul>
-          {% for location in user.location_set.all %}
+          {% for location in user.user_2.all %}
+            <li>{{location}}</li>
+          {% endfor %}
+          {% for location in user.user_1.all %}
             <li>{{location}}</li>
           {% endfor %}
           </ul>
