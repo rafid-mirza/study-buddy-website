@@ -1,38 +1,107 @@
 <!DOCTYPE html>
+{% load socialaccount %}
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{user.username}} information</title>
-</head>
-<body>
+    <head>
+        <title>{{user.username}} information</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {# Load the tag library #}
+        {% load bootstrap5 %}
 
-<ul>
-    {% for u in user.user_info_set.all %}
-    <p> You've already entered user information! </p>
-        <a href="{% url 'index' %}">Cancel</a>
-    {% empty %}
-        <form action = "{% url 'info_submit' %}" method = "POST">
-            {% csrf_token %}
-            {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-            <ul>
-                <li>
-            My Name: <input type="text" name="name">
-                    </li> <li>
-            My Major: <input type="text" name="major">
-                </li> <li>
-            My Year: <input type="text" name="year">
-                </li> <li>
-            My seriousness (1-10): <input type="text" name="seriousness">
-                </li>
+        {# Load CSS and JavaScript #}
+        {% bootstrap_css %}
+        {% bootstrap_javascript %}
+    </head>
+
+    <body class="d-flex flex-column min-vh-100">
+        {% if user.is_authenticated %}
+            <div class="p-2 bg-warning text-black text-left">
+                <h1>Buddies for Studdies</h1>
+            </div>
+        
+            <!-- A grey horizontal navbar that becomes vertical on small screens -->
+            <nav class="navbar navbar-expand-sm bg-light">
+                <div class="container-fluid">
+                    <!-- Links -->
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'index' %}">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'classes_view' %}">Classes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'all_rooms' %}">Messages</a>
+                        </li>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}"></span> Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="container p-4 my-2 border">
+                <ul>
+                    {% for u in user.user_info_set.all %}
+                        <form action = "{% url 'info_submit' %}" method = "POST">
+                            {% csrf_token %}
+                            {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+                            <ul>
+                                <li>
+                                    My Name: <input type="text" name="name" value="{{u.name}}">
+                                </li> <li>
+                                    My Major: <input type="text" name="major" value="{{u.major}}">
+                                </li> <li>
+                                    My Year: <input type="text" name="year" value="{{u.year}}">
+                                </li> <li>
+                                    My seriousness (1-10): <input type="text" name="seriousness" value="{{u.level_of_seriousness}}">
+                                </li>
+                            </ul>
+                            <input type="submit" value="Confirm!">
+                        </form>
+                        <a href="{% url 'index' %}">Cancel</a>
+                    {% empty %}
+                        <form action = "{% url 'info_submit' %}" method = "POST">
+                            {% csrf_token %}
+                            {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+                            <ul>
+                                <li>
+                            My Name: <input type="text" name="name">
+                                    </li> <li>
+                            My Major: <input type="text" name="major">
+                                </li> <li>
+                            My Year: <input type="text" name="year">
+                                </li> <li>
+                            My seriousness (1-10): <input type="text" name="seriousness">
+                                </li>
+                                </ul>
+                            <input type="submit" value="Confirm!">
+                        </form>
+                        <a href="{% url 'index' %}">Cancel</a>
+                    {% endfor %}
                 </ul>
-            <input type="submit" value="Confirm!">
-        </form>
-        <a href="{% url 'index' %}">Cancel</a>
+            </div>
+            
+        {% else %}
+            <div class="p-3 bg-warning text-black text-left">
+                <h1>Buddies for Studdies Home</h1>
+            </div>
+            <div class="container p-4 my-2 border">
+                <header>
+                <h3>Log In:</h3>
+                </header>
+                <a href="{% provider_login_url 'google' %}">Log In</a>
+            </div>
 
-    {% endfor %}
-</ul>
+        {% endif %}
 
+        <footer class="footer mt-auto py-3 bg-light">
+            <div class="container text-center">
+            <span class="text-muted">UVA CS 3240 B-15</span>
+            </div>
+        </footer>
 
-
-</body>
+    </body>
 </html>

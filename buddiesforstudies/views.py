@@ -18,10 +18,37 @@ def input_information(request):
     return render(request, 'info_retrieve.html')
 
 def info_submit(request):
-    ainfo = user_info(major = request.POST.get('major', 'computer science'), level_of_seriousness = request.POST.get('seriousness', '10'), name = request.POST.get('name', 'John Doe'), year = request.POST.get('year', '1'), user = request.user)
+    major_input = request.POST.get('major')
+    level_of_seriousness_input = request.POST.get('seriousness')
+    name_input = request.POST.get('name')
+    year_input = request.POST.get('year')
+    if len(name_input) > 128:
+        return render(request, 'info_retrieve.html', {'error_message': "Name cannot exceed 128 characters"})
+    if len(major_input) > 128:
+        return render(request, 'info_retrieve.html', {'error_message': "Major title cannot exceed 128 characters"})
+    not_a_number = False
+    try:
+        float(year_input)
+    except ValueError:
+        not_a_number = True
+    if len(year_input) > 1 or not_a_number:
+        return render(request, 'info_retrieve.html', {'error_message': "Year must be a number 1-9"})
+    not_a_number = False
+    try:
+        float(level_of_seriousness_input)
+    except ValueError:
+        not_a_number = True
+    if (len(level_of_seriousness_input) > 1 and level_of_seriousness_input != "10") or not_a_number:
+        return render(request, 'info_retrieve.html', {'error_message': "Interest must be a number 1-10"})
+    queryset = user_info.objects.filter(user = request.user)
+    if len(queryset) > 0:
+        queryset[0].delete()
+    ainfo = user_info(major = major_input, level_of_seriousness = level_of_seriousness_input, name = name_input, year = year_input, user = request.user)
     ainfo.save()
     return HttpResponseRedirect(reverse('matching'))
 
+def classes_view(request):
+    return render(request, 'classes_view.html')
 
 def add_class(request):
     model = classes
