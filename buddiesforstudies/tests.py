@@ -37,14 +37,14 @@ class AddClassTests(TestCase):
     def test_add_real_class(self):
         title = 'CS 3240'
         self.client.post(reverse('submit'), {'title':title})
-        url = reverse('index')
+        url = reverse('classes_view')
         response = self.client.get(url)
         self.assertContains(response, title)
 
-    def test_add_real_class(self):
+    def test_add_fake_class(self):
         title = 'Not a Class'
         self.client.post(reverse('submit'), {'title':title})
-        url = reverse('index')
+        url = reverse('classes_view')
         response = self.client.get(url)
         self.assertContains(response, 'You do not have any classes added')
 
@@ -65,7 +65,7 @@ class RemoveClassTests(TestCase):
     def test_remove_class(self):
         title = 'CS 3240'
         self.client.post(reverse('remove'), {'choice':title})
-        url = reverse('index')
+        url = reverse('classes_view')
         response = self.client.get(url)
         self.assertContains(response, 'You do not have any classes added')
 
@@ -84,21 +84,21 @@ class ToggleClassTests(TestCase):
     def test_add_real_class(self):
         title = 'CS 3240'
         self.client.post(reverse('submit'), {'title':title})
-        url = reverse('index')
+        url = reverse('classes_view')
         response = self.client.get(url)
         self.assertContains(response, title)
 
     def test_add_real_class(self):
         title = 'CS 4102'
         self.client.post(reverse('submit'), {'title':title})
-        url = reverse('index')
+        url = reverse('classes_view')
         response = self.client.get(url)
         self.assertContains(response, title)
 
     def test_add_real_class(self):
         title = 'CS 3102'
         self.client.post(reverse('submit'), {'title':title})
-        url = reverse('index')
+        url = reverse('classes_view')
         response = self.client.get(url)
         self.assertContains(response, title)
 
@@ -122,38 +122,38 @@ class UntoggleClassTests(TestCase):
     def tearDown(self):
         self.user.delete()
 
-    def test_add_real_class(self):
+    def test_add_real_class1(self):
         title = 'CS 3240'
         self.client.post(reverse('submit'), {'title':title})
-        url = reverse('index')
+        url = reverse('classes_view')
         response = self.client.get(url)
         self.assertContains(response, title)
 
-    def test_add_real_class(self):
+    def test_add_real_class2(self):
         title = 'CS 4102'
         self.client.post(reverse('submit'), {'title':title})
-        url = reverse('index')
+        url = reverse('classes_view')
         response = self.client.get(url)
         self.assertContains(response, title)
 
-    def test_add_real_class(self):
+    def test_add_real_class3(self):
         title = 'CS 3102'
         self.client.post(reverse('submit'), {'title':title})
-        url = reverse('index')
+        url = reverse('classes_view')
         response = self.client.get(url)
         self.assertContains(response, title)
 
-    def test_add_real_class(self):
+    def test_add_real_class4(self):
         title = 'CS 9999'
         self.client.post(reverse('submit'), {'title':title})
-        url = reverse('index')
+        url = reverse('classes_view')
         response = self.client.get(url)
         self.assertContains(response, title)
 
-    def test_add_real_class(self):
+    def test_add_real_class5(self):
         title = 'CS 4414'
         self.client.post(reverse('submit'), {'title':title})
-        url = reverse('index')
+        url = reverse('classes_view')
         response = self.client.get(url)
         self.assertContains(response, title)
 
