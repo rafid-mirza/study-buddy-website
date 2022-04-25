@@ -21,10 +21,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
-TWILIO_ACCOUNT_SID = 'AC6ae860de6ae01a48fe3f79ca96087824'
-TWILIO_API_KEY = 'SK960a302e0ed88fdb919985121b6c95a5'
-TWILIO_API_SECRET = 'JmINLQQFKR5ZgkQ6VqQRAyhevNuzp4FZ'
-TWILIO_CHAT_SERVICE_SID = 'ISa12ec54c3f3f4303b4dcaf5812983197'
+TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', None)
+TWILIO_API_KEY = os.environ.get('TWILIO_API_KEY', None)
+TWILIO_API_SECRET = os.environ.get('TWILIO_API_SECRET', None)
+TWILIO_CHAT_SERVICE_SID = os.environ.get('TWILIO_CHAT_SERVICE_SID', None)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-3j(ycuh#-0jx!z0=p$!h*d_&(e6^cfn_rwqz=j00h^g*8zi1&e'
