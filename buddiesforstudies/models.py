@@ -44,10 +44,24 @@ class toggled_classes(models.Model):
         return self.title
 
 
-class Room(models.Model):
-    name = models.CharField(max_length=30)
-    description = models.CharField(max_length=100)
-    slug = models.CharField(max_length=50)
+class participant(models.Model):
+    identity = models.CharField(max_length=128)
+    user_id = models.CharField(max_length=128)
+
+    class Meta:
+        ordering = ["identity"]
 
     def __str__(self):
-        return self.name
+        return self.identity
+
+
+class conversation(models.Model):
+    friendly_name = models.CharField(max_length=128)
+    chat_id = models.CharField(max_length=128)
+    participants = models.ManyToManyField(participant, verbose_name="List of Chat Members")
+
+    class Meta:
+        ordering = ["friendly_name"]
+
+    def __str__(self):
+        return self.friendly_name

@@ -4,10 +4,11 @@ from django.urls import reverse
 from django.conf import settings
 from twilio.jwt.access_token import AccessToken
 from twilio.jwt.access_token.grants import ChatGrant
-from .models import classes, jsonData, toggled_classes, Room
+from .models import classes, jsonData, toggled_classes, participant, conversation
 from django.views.generic import CreateView
 from .models import classes, jsonData, toggled_classes, Location
-
+import os
+from twilio.rest import Client
 
 def index(request):
     return render(request, 'login.html',{})
@@ -88,43 +89,50 @@ def untoggle(request):
             return HttpResponseRedirect(reverse('index'))
 
 
-def all_rooms(request):
-    rooms = Room.objects.all()
-    return render(request, 'room_index.html', {'rooms': rooms})
+def messages_home(request):
+    account_sid = os.environ['TWILIO_ACCOUNT_SID']
+    auth_token = os.environ['TWILIO_AUTH_TOKEN']
+    client = Client(account_sid, auth_token)
+
+    # Checks if user already exists in models, and if it does it gets the user id
+    user_id = None
+    for member in participant.objects.all():
+        if member.identity == request.user.username:
+            user_id = member.user_id
+            temp_participant = member.identity
+    if user_id is None:
+        user = client.conversations.users.create(identity=request.user.username)
+        temp_participant = member.identity
+
+    # Checks for chats the user is in
+    chats = []
+    for chat in conversation:
+        for member in chat.participants.all():
+            if member.identity is temp_participant:
+                chats.append(chat)
+    chat_messages = []
+    chat_participants = []
+    if chats:
+        participants = client.conversations(chats[0].chat_id).participants.list()
+        for member in participants:
+            chat_participants.append(member['identity'])
+        messages = client.conversations.conversations(chats[0].chat_id).messages.list()
+        for message in messages['messages']:
+            chat_messages.append([message['body'], message['author'], message['date_updated']])
+
+    return render(request, 'messages.html', {chats: 'conversations', chat_messages: 'messages',
+                                             chat_participants: "participants"})
+
+def create_chat(request):
 
 
-def room_detail(request, slug):
-    room = Room.objects.get(slug=slug)
-    return render(request, 'room_detail.html', {'room': room})
+
+def send_message(request):
+    account_sid = os.environ['TWILIO_ACCOUNT_SID']
+    auth_token = os.environ['TWILIO_AUTH_TOKEN']
+    client = Client(account_sid, auth_token)
 
 
-def token(request):
-    identity = request.user.username
-    device_id = request.GET.get('device', 'default')  # unique device ID
-
-    account_sid = settings.TWILIO_ACCOUNT_SID
-    api_key = settings.TWILIO_API_KEY
-    api_secret = settings.TWILIO_API_SECRET
-    chat_service_sid = settings.TWILIO_CHAT_SERVICE_SID
-
-    user_token = AccessToken(account_sid, api_key, api_secret, identity=identity)
-
-    # Create a unique endpoint ID for the device
-    endpoint = "MyDjangoChatRoom:{0}:{1}".format(identity, device_id)
-
-    if chat_service_sid:
-        chat_grant = ChatGrant(endpoint_id=endpoint,
-                               service_sid=chat_service_sid)
-        user_token.add_grant(chat_grant)
-
-    response = {
-        'identity': identity,
-        'token': user_token.to_jwt().decode('utf-8')
-    }
-
-    return JsonResponse(response)
-
-          
 class AddLocationView(CreateView):
     model = Location
     template_name = "maps.html"

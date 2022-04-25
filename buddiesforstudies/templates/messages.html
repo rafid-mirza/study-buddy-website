@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+{% load socialaccount %}
+<html lang="en">
+    <head>
+        <title>Your Messages</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {# Load the tag library #}
+        {% load bootstrap5 %}
+
+        {# Load CSS and JavaScript #}
+        {% bootstrap_css %}
+        {% bootstrap_javascript %}
+    </head>
+
+    <body class="d-flex flex-column min-vh-100">
+        {% if user.is_authenticated %}
+            <div class="p-2 bg-warning text-black text-left">
+                <h1>Buddies for Studies</h1>
+            </div>
+
+            <div class="container p-4 my-2 border">
+                <header>
+                    <h3>Toggle Classes:</h3>
+                </header>
+                <form action="{% url 'toggle' %}" method="post">
+                    {% csrf_token %}
+                    <fieldset>
+                        {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+                        {% for chat in user.classes_set.all %}
+                            <input type="checkbox" name="choice" id="choice{{ forloop.counter }}" value="{{ class }}">
+                            <label for="choice{{ forloop.counter }}">{{ class }}</label><br>
+                        {% endfor %}
+                    </fieldset>
+                    <input type="submit" value="Submit">
+                    </form>
+                <a href="{% url 'index' %}">Cancel</a>
+            </div>
+
+        {% else %}
+            <div class="p-3 bg-warning text-black text-left">
+                <h1>Buddies for Studdies Home</h1>
+            </div>
+            <div class="container p-4 my-2 border">
+                <header>
+                <h3>Log In:</h3>
+                </header>
+                <a href="{% provider_login_url 'google' %}">Log In</a>
+            </div>
+
+        {% endif %}
+
+        <footer class="footer mt-auto py-3 bg-light">
+            <div class="container text-center">
+            <span class="text-muted">UVA CS 3240 B-15</span>
+            </div>
+        </footer>
+
+    </body>
+</html>
