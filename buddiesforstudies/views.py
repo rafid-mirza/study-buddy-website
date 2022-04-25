@@ -99,38 +99,93 @@ def messages_home(request):
     for member in participant.objects.all():
         if member.identity == request.user.username:
             user_id = member.user_id
-            temp_participant = member.identity
     if user_id is None:
         user = client.conversations.users.create(identity=request.user.username)
-        temp_participant = member.identity
+        temp_participant = participant(user_id=user.sid, identity=request.user.username)
 
     # Checks for chats the user is in
     chats = []
     for chat in conversation:
         for member in chat.participants.all():
-            if member.identity is temp_participant:
+            if member.identity is request.user.username:
                 chats.append(chat)
     chat_messages = []
     chat_participants = []
     if chats:
-        participants = client.conversations(chats[0].chat_id).participants.list()
-        for member in participants:
-            chat_participants.append(member['identity'])
+        participants = client.conversations.conversations(chats[0].chat_id).participants.list()
+        for chatMember in participants:
+            chat_participants.append(chatMember['identity'])
         messages = client.conversations.conversations(chats[0].chat_id).messages.list()
         for message in messages['messages']:
             chat_messages.append([message['body'], message['author'], message['date_updated']])
+        return render(request, 'messages.html', {'conversations': chats, 'messages': chat_messages,
+                                                 "participants": chat_participants, 'current_chat': chats[0].chat_id})
 
-    return render(request, 'messages.html', {chats: 'conversations', chat_messages: 'messages',
-                                             chat_participants: "participants"})
 
-def create_chat(request):
-
+def create_chat_one(request):
+    account_sid = os.environ['TWILIO_ACCOUNT_SID']
+    auth_token = os.environ['TWILIO_AUTH_TOKEN']
+    client = Client(account_sid, auth_token)
+    friendly_name = request.POST['name']
+    chat = client.conversations.conversations.create(friendly_name=friendly_name)
+    chat_object = conversation(friendly_name=friendly_name, chat_id=chat.sid)
+    member = client.conversations.conversations(chat_object.chat_id).participants.create(
+        identity=request.user.username)
+    chat_object.save()
+    chat_object.participants.add(participant.objects.get(identity=request.user.username))
+    return messages_home(request)
 
 
 def send_message(request):
     account_sid = os.environ['TWILIO_ACCOUNT_SID']
     auth_token = os.environ['TWILIO_AUTH_TOKEN']
     client = Client(account_sid, auth_token)
+    message = client.conversations.conversations(request.POST["conversation_id"]).messages.create(
+        author=request.user.username, body=request.POST["message"])
+    return refresh_feed(request)
+
+
+def refresh_feed(request):
+    # Checks for chats the user is in but this version keeps the spot in the messages list
+    account_sid = os.environ['TWILIO_ACCOUNT_SID']
+    auth_token = os.environ['TWILIO_AUTH_TOKEN']
+    client = Client(account_sid, auth_token)
+    chats = []
+    for chat in conversation:
+        for member in chat.participants.all():
+            if member.identity is request.user.username:
+                chats.append(chat)
+    chat_messages = []
+    chat_participants = []
+    if chats:
+        participants = client.conversations.conversations(request.POST["conversation_id"]).participants.list()
+        for member in participants:
+            chat_participants.append(member['identity'])
+        messages = client.conversations.conversations(request.POST["conversation_id"]).messages.list()
+        for message in messages['messages']:
+            chat_messages.append([message['body'], message['author'], message['date_updated']])
+    return render(request, 'messages.html', {'conversations': chats, 'messages': chat_messages,
+                                             "participants": chat_participants,
+                                             "current_chat": request.POST["conversation_id"]})
+
+
+def add_participant(request):
+    account_sid = os.environ['TWILIO_ACCOUNT_SID']
+    auth_token = os.environ['TWILIO_AUTH_TOKEN']
+    client = Client(account_sid, auth_token)
+    try:
+        existing_user = participant.objects.get(identity=request.POST["name"])
+        new_member = client.conversations.conversations(request.POST["conversation_id"]).participants.create(
+            identity=request.POST["name"])
+        chat_object = conversation.objects.get(chat_id=request.POST["conversation_id"])
+        chat_object.participants.add(existing_user)
+    except(KeyError, participant.DoesNotExist):
+        return render(request, 'messages.html',
+                      {"error_message": "User does not exist or has not ever clicked on messages"})
+    return refresh_feed(request)
+
+
+
 
 
 class AddLocationView(CreateView):
