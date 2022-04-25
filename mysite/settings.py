@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 from pathlib import Path
 import os
 import sys
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,6 +26,9 @@ TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', None)
 TWILIO_API_KEY = os.environ.get('TWILIO_API_KEY', None)
 TWILIO_API_SECRET = os.environ.get('TWILIO_API_SECRET', None)
 TWILIO_CHAT_SERVICE_SID = os.environ.get('TWILIO_CHAT_SERVICE_SID', None)
+
+dotenv_path = os.path.join(BASE_DIR, '../.env')
+load_dotenv(dotenv_path)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-3j(ycuh#-0jx!z0=p$!h*d_&(e6^cfn_rwqz=j00h^g*8zi1&e'
