@@ -105,7 +105,7 @@ def messages_home(request):
 
     # Checks for chats the user is in
     chats = []
-    for chat in conversation:
+    for chat in conversation.objects.all():
         for member in chat.participants.all():
             if member.identity is request.user.username:
                 chats.append(chat)
@@ -151,7 +151,7 @@ def refresh_feed(request):
     auth_token = os.environ['TWILIO_AUTH_TOKEN']
     client = Client(account_sid, auth_token)
     chats = []
-    for chat in conversation:
+    for chat in conversation.objects.all():
         for member in chat.participants.all():
             if member.identity is request.user.username:
                 chats.append(chat)

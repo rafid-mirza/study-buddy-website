@@ -1,5 +1,23 @@
 <!DOCTYPE html>
 {% load socialaccount %}
+
+<!-- Modifying template from https://bootsnipp.com/snippets/4MGa2 -->
+
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<!------ Include the above in your HEAD tag ---------->
+
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<!------ Include the above in your HEAD tag ---------->
+
+<link href="messages.css">
+
+<!--3rd Party Fonts & Icons-->
+<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Open+Sans"/>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 <html lang="en">
     <head>
         <title>Your Messages</title>
@@ -15,27 +33,117 @@
 
     <body class="d-flex flex-column min-vh-100">
         {% if user.is_authenticated %}
-            <div class="p-2 bg-warning text-black text-left">
-                <h1>Buddies for Studies</h1>
+            <div class="container fill">
+                <div class="row chat-wrap">
+            <!--Left Menu / Conversation List-->
+            <div class="col-sm-12 section-wrap">
+
+                <!--Header-->
+                <div class="row header-wrap">
+                    <div class="chat-header col-sm-12">
+                        <!-- Replace username -->
+                        <h4 id="username"> user.username</h4>
+                        <div class="header-button">
+                            <a class="btn pull-right" href="#Contacts" data-toggle="collapse">
+                                <i class="fa fa-pencil-square-o fa-lg"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!--Conversations-->
+                <div class="row content-wrap">
+                    <!-- Modified to have conversation friendly name rather than contact name -->
+                    {% for convo in chats %}
+                    <div class="conversation btn">
+                        <div class="media-body">
+                            <!-- Change to being a button with calls for views refresh feed w/ convo id -->
+                            <h5 class="btn" id="chat_name"> convo.friendly_name </h5>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
             </div>
 
-            <div class="container p-4 my-2 border">
-                <header>
-                    <h3>Toggle Classes:</h3>
-                </header>
-                <form action="{% url 'toggle' %}" method="post">
-                    {% csrf_token %}
-                    <fieldset>
-                        {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-                        {% for chat in user.classes_set.all %}
-                            <input type="checkbox" name="choice" id="choice{{ forloop.counter }}" value="{{ class }}">
-                            <label for="choice{{ forloop.counter }}">{{ class }}</label><br>
-                        {% endfor %}
-                    </fieldset>
-                    <input type="submit" value="Submit">
-                    </form>
-                <a href="{% url 'index' %}">Cancel</a>
+        </div>
+
+        <!-- Messages & Info -->
+        <div class="col-sm-9 panel-wrap">
+
+            <!--Main Content / Message List-->
+            <div class="col-sm-9 section-wrap" id="Messages">
+
+                <!--Header-->
+                <div class="row header-wrap">
+                    <div class="chat-header col-sm-12">
+                        <div class="header-button">
+                            <a class="btn pull-right info-btn">
+                                <i class="fa fa-info-circle fa-lg"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!--Messages-->
+                <div class="row content-wrap messages">
+                    {% for message in messages %}
+                        <div class="msg">
+                            <div class="media-body">
+                                <!-- Check if this way of having message info is valid -->
+                                <small class="pull-right time"><i class="fa fa-clock-o"></i> message[2] </small>
+                                <h5 class="media-heading"> message[1] </h5>
+                                <small class="col-sm-11"> message[0] </small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!--Message box & Send Button-->
+                <div class="row send-wrap">
+                    <div class="send-message">
+                        <div class="message-text">
+                            <textarea class="no-resize-bar form-control" rows="2" placeholder="Write a message..." id="message_text"></textarea>
+                        </div>
+                        <div class="send-button">
+                            <!-- Check how to redirect to send messages -->
+                            <a class="btn">Send <i class="fa fa-send"></i></a>
+                        </div>
+                    </div>
+                </div>
+
             </div>
+
+            <!--Sliding Menu / Conversation Members-->
+            <div class="col-sm-3 section-wrap" id="Members">
+
+                <!--Header-->
+                <div class="row header-wrap">
+                    <div class="chat-header col-sm-12">
+                        <h4>Conversation Info</h4>
+                        <div class="header-button">
+                            <a class="btn pull-right info-btn">
+                                <i class="fa fa-close"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!--Members-->
+                <div class="row content-wrap">
+                    {% for participant in participants %}
+                    <div class="contact">
+                        <div class="media-body">
+                            <h5 class="media-heading">participant.identity</h5>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+            </div>
+            </div>
+
 
         {% else %}
             <div class="p-3 bg-warning text-black text-left">
