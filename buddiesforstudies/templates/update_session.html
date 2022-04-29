@@ -1,0 +1,14 @@
+{% extends "core.html" %}
+{% load bootstrap5 %}
+{% block content %}
+    {%if user in authorized%}
+        <form method="post">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            <input class="btn btn-primary text-light btn-lg" type="submit" value="submit">
+        </form>
+        {{ form.media }}
+    {%else%}
+        You're not supposed to be here!
+    {%endif%}
+{% endblock %}

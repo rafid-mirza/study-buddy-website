@@ -177,6 +177,17 @@ class AddLocationView(LoginRequiredMixin, CreateView):
         form.instance.user_2 = self.request.user
         return super().form_valid(form)
 
+def UpdateLocation(request, id):
+    location = Location.objects.get(id=id)
+    if request.method == 'POST':
+        form = LocationForm(request.POST, instance = location)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('maps'))
+    else:
+        form = LocationForm(instance = location)
+    return render(request, 'update_session.html', {'form':form, 'authorized': [location.user_1, location.user_2, location.user_3]})
+
 
 def major_evaluation(request, candidateusers):
     second = majormatch(request, candidateusers)

@@ -55,7 +55,7 @@
         {% if locations %}
           <ul>
           {% for location in locations %}
-            <li>{{location.address}}</li>
+            <li>{{location.address}} - <a href = "{% url 'update' location.id%}">EDIT</a> </li>
           <ul>
             <li>{{location.user_1}} and {{location.user_2}}
             {% if location.user_3 %}

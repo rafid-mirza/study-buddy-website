@@ -21,6 +21,7 @@ urlpatterns = [
     re_path(r'rooms/token$', views.token, name="token"),
     re_path(r'rooms/(?P<slug>[-\w]+)/$', views.room_detail, name="room_detail"),
     path('maps', views.AddLocationView.as_view(), name = 'maps'),
+    path('maps/update/<int:id>', views.UpdateLocation, name = 'update'),
     path('info_input', views.input_information, name='info'),
     path('info_input/submit', views.info_submit, name='info_submit'),
     path('matching', views.match, name='matching')
