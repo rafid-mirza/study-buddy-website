@@ -8,10 +8,16 @@ from .models import classes, jsonData, toggled_classes, Room
 from django.views.generic import CreateView
 from .models import classes, jsonData, toggled_classes, Location, user_info
 from django.contrib.auth.mixins import LoginRequiredMixin
+from .forms import LocationForm
+from django.db.models import Q
 
 
 def index(request):
-    return render(request, 'login.html',{})
+    if not request.user.is_authenticated:
+        return render(request, 'login.html',{})
+    return render(request, 'login.html',{
+        'locations': Location.objects.filter(Q(user_1=request.user) | Q(user_2=request.user)).order_by('date', 'time')
+        })
 
 def input_information(request):
     model = user_info
@@ -164,9 +170,9 @@ def token(request):
           
 class AddLocationView(LoginRequiredMixin, CreateView):
     model = Location
+    form_class = LocationForm
     template_name = "maps.html"
     success_url = "/buddiesforstudies/maps"
-    fields = ("location", "address", "user_1")
     def form_valid(self, form):
         form.instance.user_2 = self.request.user
         return super().form_valid(form)
