@@ -53,6 +53,7 @@
                   <li> Your Major: {{u.major}}</li>
                   <li> Your Year: {{u.year}}</li>
                   <li> Your Interest: {{u.level_of_seriousness}}</li>
+                  <li> Your Matches: {{u.match_students}}</li>
                   <li> Your Classes:
                       <ul>
                       {% for class in user.toggled_classes_set.all %}
@@ -84,6 +85,9 @@
           </div>
           <a href="{% url 'info' %}">Edit Info</a>
           <a href="{% url 'all_rooms' %}">Talk to this person!</a>
+            <a href="{% url 'matching' %}">Find another match!</a>
+
+            <a href="{% url 'clear' %}">Clear all Matches</a>
         </div>
       {%empty%}
         <p> You need to enter information before getting matching </p>

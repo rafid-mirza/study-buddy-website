@@ -52,13 +52,20 @@
         <header>
           <h3>Upcoming Study Sessions:</h3>
         </header>
-        {% if user.user_2.all or user.user_1.all %}
+        {% if locations %}
           <ul>
-          {% for location in user.user_2.all %}
-            <li>{{location}}</li>
-          {% endfor %}
-          {% for location in user.user_1.all %}
-            <li>{{location}}</li>
+          {% for location in locations %}
+            <li>{{location.address}} - <a href = "{% url 'update' location.id%}">EDIT </a></li>
+          <ul>
+            <li>{{location.user_1}} and {{location.user_2}}
+            {% if location.user_3 %}
+              and {{location.user_3}}</li>
+            {% else %}
+              </li>
+            {%endif%}
+            <li>{{location.date}}</li>
+            <li>{{location.time}}</li>
+          </ul>
           {% endfor %}
           </ul>
         {% else %}
