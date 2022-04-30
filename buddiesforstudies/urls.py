@@ -25,5 +25,6 @@ urlpatterns = [
     path('maps/delete/<int:id>', views.DeleteUserFromLocation, name = 'delete'),
     path('info_input', views.input_information, name='info'),
     path('info_input/submit', views.info_submit, name='info_submit'),
-    path('matching', views.match, name='matching')
+    path('matching', views.match, name='matching'),
+    path('clear_matches', views.clearmatches, name = 'clear')
 ]

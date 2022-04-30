@@ -5,14 +5,15 @@ import requests
 from django import forms
 from mapbox_location_field.models import LocationField, AddressAutoHiddenField
 
-class Location(models.Model):  
+
+class Location(models.Model):
     location = LocationField( map_attrs={"center": (-78.50, 38.04)})
     address = AddressAutoHiddenField(default = "")
     def __str__(self):
         return self.address
     user_1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_1', null = TRUE)
     user_2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_2', null = TRUE)
-    user_3 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_3', blank = TRUE, null = TRUE)
+    user_3 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_3', null = TRUE)
     date = models.DateField(null=TRUE)
     time = models.TimeField(null=TRUE)
 
@@ -23,6 +24,7 @@ class user_info(models.Model):
     year = models.CharField(max_length=1)
     major = models.CharField(max_length=128)
     level_of_seriousness =  models.CharField(max_length=2)
+    match_students = models.CharField(max_length = 1000, default = "")
 
     def __str__(self):
         return self.name
