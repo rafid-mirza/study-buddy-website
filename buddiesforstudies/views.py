@@ -193,17 +193,6 @@ def UpdateLocation(request, id):
         form = LocationForm(instance = location)
     return render(request, 'update_session.html', {'form':form, 'authorized': [location.user_1, location.user_2, location.user_3]})
 
-def DeleteUserFromLocation(request, id):
-    location = Location.objects.get(id = id)
-    if location.user_1 == request.user:
-        location.user_1 = None
-    if location.user_2 == request.user:
-        location.user_2 = None
-    if location.user_3 == request.user:
-        location.user_3 = None
-    Location.objects.filter(id=id).delete()
-    return HttpResponseRedirect(reverse('index'))
-
 
 def major_evaluation(request, candidateusers):
     second = majormatch(request, candidateusers)
