@@ -71,7 +71,7 @@ def submit(request):
             aclass.save()
         else:
             return render(request, 'add_class.html', {'error_message': "That class does not exist."})
-    return HttpResponseRedirect(reverse('index'))
+    return HttpResponseRedirect(reverse('classes_view'))
 
 
 def remove_class(request):
@@ -88,11 +88,11 @@ def remove(request):
         return render(request, 'remove_class.html', {'error_message': "You did not select a class."})
     except toggled_classes.DoesNotExist:
         aclass.delete()
-        return HttpResponseRedirect(reverse('index'))
+        return HttpResponseRedirect(reverse('classes_view'))
     else:
         aclass.delete()
         aclass2.delete()
-        return HttpResponseRedirect(reverse('index'))
+        return HttpResponseRedirect(reverse('classes_view'))
 
 
 def toggle_class(request):
@@ -112,7 +112,7 @@ def toggle(request):
                 else:
                     class_to_toggle = toggled_classes(title=i, user=request.user)
                     class_to_toggle.save()
-            return HttpResponseRedirect(reverse('index'))
+            return HttpResponseRedirect(reverse('classes_view'))
 
 
 def untoggle_class(request):
@@ -129,7 +129,7 @@ def untoggle(request):
             for i in choice:
                     class_to_untoggle = toggled_classes.objects.get(title = i, user = request.user)
                     class_to_untoggle.delete()
-            return HttpResponseRedirect(reverse('index'))
+            return HttpResponseRedirect(reverse('classes_view'))
 
 
 def all_rooms(request):
@@ -227,7 +227,7 @@ def interestmatch(request, candidateusers):
 
 def clearmatches(request):
     user_info.objects.filter(user=request.user).update(match_students='')
-    return HttpResponseRedirect(reverse('index'))
+    return HttpResponseRedirect(reverse('matching'))
 
 def match(request):
     if len(list(request.user.user_info_set.all())) == 0:
