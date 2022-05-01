@@ -2,8 +2,6 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.conf import settings
-from twilio.jwt.access_token import AccessToken
-from twilio.jwt.access_token.grants import ChatGrant
 from .models import classes, jsonData, toggled_classes, participant, conversation
 from django.views.generic import CreateView
 from .models import classes, jsonData, toggled_classes, Location
@@ -38,7 +36,7 @@ def remove_class(request):
 
 def remove(request):
     try:
-        aclass = classes.objects.get(title = request.POST['choice'], user = request.user)
+        aclass = classes.objects.get(title=request.POST['choice'], user=request.user)
         aclass2 = toggled_classes.objects.get(title=request.POST['choice'], user=request.user)
     except (KeyError, classes.DoesNotExist):
         # Redisplay the class removing form.
@@ -100,8 +98,16 @@ def messages_home(request):
         if member.identity == request.user.username:
             user_id = member.user_id
     if user_id is None:
+        for second_check in client.conversations.users.list():
+            if second_check.identity == request.user.username:
+                user_id = second_check.sid
+                temp_participant = participant(user_id=user_id, identity=request.user.username)
+                temp_participant.save()
+
+    if user_id is None:
         user = client.conversations.users.create(identity=request.user.username)
         temp_participant = participant(user_id=user.sid, identity=request.user.username)
+        temp_participant.save()
 
     # Checks for chats the user is in
     chats = []
@@ -118,8 +124,9 @@ def messages_home(request):
         messages = client.conversations.conversations(chats[0].chat_id).messages.list()
         for message in messages['messages']:
             chat_messages.append([message['body'], message['author'], message['date_updated']])
-        return render(request, 'messages.html', {'conversations': chats, 'messages': chat_messages,
-                                                 "participants": chat_participants, 'current_chat': chats[0].chat_id})
+    return render(request, 'messages.html', {'conversations': chats, 'messages': chat_messages,
+                                             "participants": chat_participants,
+                                             'current_chat': chats[0].friendly_name})
 
 
 def create_chat_one(request):
@@ -133,7 +140,7 @@ def create_chat_one(request):
         identity=request.user.username)
     chat_object.save()
     chat_object.participants.add(participant.objects.get(identity=request.user.username))
-    return messages_home(request)
+    return display_messages(request)
 
 
 def send_message(request):
@@ -142,10 +149,10 @@ def send_message(request):
     client = Client(account_sid, auth_token)
     message = client.conversations.conversations(request.POST["conversation_id"]).messages.create(
         author=request.user.username, body=request.POST["message"])
-    return refresh_feed(request)
+    return display_messages(request)
 
 
-def refresh_feed(request):
+def display_messages(request, current_chat):
     # Checks for chats the user is in but this version keeps the spot in the messages list
     account_sid = os.environ['TWILIO_ACCOUNT_SID']
     auth_token = os.environ['TWILIO_AUTH_TOKEN']
@@ -157,32 +164,33 @@ def refresh_feed(request):
                 chats.append(chat)
     chat_messages = []
     chat_participants = []
+
     if chats:
-        participants = client.conversations.conversations(request.POST["conversation_id"]).participants.list()
+        participants = client.conversations.conversations(current_chat.chat_id).participants.list()
         for member in participants:
             chat_participants.append(member['identity'])
-        messages = client.conversations.conversations(request.POST["conversation_id"]).messages.list()
+        messages = client.conversations.conversations(current_chat.chat_id).messages.list()
         for message in messages['messages']:
             chat_messages.append([message['body'], message['author'], message['date_updated']])
     return render(request, 'messages.html', {'conversations': chats, 'messages': chat_messages,
                                              "participants": chat_participants,
-                                             "current_chat": request.POST["conversation_id"]})
+                                             "current_chat": current_chat.friendly_name})
+
+
+def change_chats(request):
+    name_of_chat = request.POST["chat_name"]
+    for chat in conversation.objects.all():
+        if chat.friendly_name == name_of_chat:
+            current_chat = chat
+    return display_messages(request, current_chat)
 
 
 def add_participant(request):
     account_sid = os.environ['TWILIO_ACCOUNT_SID']
     auth_token = os.environ['TWILIO_AUTH_TOKEN']
     client = Client(account_sid, auth_token)
-    try:
-        existing_user = participant.objects.get(identity=request.POST["name"])
-        new_member = client.conversations.conversations(request.POST["conversation_id"]).participants.create(
-            identity=request.POST["name"])
-        chat_object = conversation.objects.get(chat_id=request.POST["conversation_id"])
-        chat_object.participants.add(existing_user)
-    except(KeyError, participant.DoesNotExist):
-        return render(request, 'messages.html',
-                      {"error_message": "User does not exist or has not ever clicked on messages"})
-    return refresh_feed(request)
+
+    return display_messages(request, current_chat)
 
 
 

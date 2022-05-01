@@ -33,6 +33,27 @@
 
     <body class="d-flex flex-column min-vh-100">
         {% if user.is_authenticated %}
+             <!-- A grey horizontal navbar that becomes vertical on small screens -->
+            <nav class="navbar navbar-expand-sm bg-light">
+                <div class="container-fluid">
+                    <!-- Links -->
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'index' %}">Classes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'index' %}">Find Matches</a>
+                        </li>
+                        <!--<li class="nav-item">
+                            <a class="nav-link" href="{% url 'index' %}">Messages</a>
+                        </li> -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
             <div class="container fill">
                 <div class="row chat-wrap">
             <!--Left Menu / Conversation List-->
@@ -43,25 +64,22 @@
                     <div class="chat-header col-sm-12">
                         <!-- Replace username -->
                         <h4 id="username"> user.username</h4>
-                        <div class="header-button">
-                            <a class="btn pull-right" href="#Contacts" data-toggle="collapse">
-                                <i class="fa fa-pencil-square-o fa-lg"></i>
-                            </a>
-                        </div>
                     </div>
                 </div>
 
                 <!--Conversations-->
                 <div class="row content-wrap">
+                    <form action = "{% url 'change_chats' %}" method = "POST">
+                    {% csrf_token %}
                     <!-- Modified to have conversation friendly name rather than contact name -->
-                    {% for convo in chats %}
-                    <div class="conversation btn">
-                        <div class="media-body">
-                            <!-- Change to being a button with calls for views refresh feed w/ convo id -->
-                            <h5 class="btn" id="chat_name"> convo.friendly_name </h5>
-                        </div>
-                    </div>
+                    {% for convo in conversations %}
+                        {% if convo.friendly_name is current_chat %}
+                            <button type="submit" class="btn btn-primary" id="chat_name" value = "{{ convo.friendly_name }}"> {{ convo.friendly_name }}</button>
+                        {% else %}
+                            <button type="submit" class="btn btn-primary" id="chat_name" value = "{{ convo.friendly_name }}"> {{ convo.friendly_name }}</button>
+                        {% endif %}
                     {% endfor %}
+                    </form>>
                 </div>
 
             </div>
@@ -79,7 +97,7 @@
                     <div class="chat-header col-sm-12">
                         <div class="header-button">
                             <a class="btn pull-right info-btn">
-                                <i class="fa fa-info-circle fa-lg"></i>
+                                <i class="fa fa-info-circle fa-lg"> {{ current_chat }} </i>
                             </a>
                         </div>
                     </div>
@@ -87,31 +105,30 @@
 
                 <!--Messages-->
                 <div class="row content-wrap messages">
-                    {% for message in messages %}
-                        <div class="msg">
-                            <div class="media-body">
-                                <!-- Check if this way of having message info is valid -->
-                                <small class="pull-right time"><i class="fa fa-clock-o"></i> message[2] </small>
-                                <h5 class="media-heading"> message[1] </h5>
-                                <small class="col-sm-11"> message[0] </small>
+                    <div>
+                        {% for message in messages %}
+                            <div class="msg">
+                                <div class="media-body">
+                                    <!-- Check if this way of having message info is valid -->
+                                    <h5 class="media-heading"> message[1] </h5>
+                                    <small class="col-sm-11"> message[0] </small>
+                                </div>
                             </div>
-                        </div>
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
                 </div>
 
                 <!--Message box & Send Button-->
                 <div class="row send-wrap">
                     <div class="send-message">
                         <div class="message-text">
-                            <textarea class="no-resize-bar form-control" rows="2" placeholder="Write a message..." id="message_text"></textarea>
-                        </div>
-                        <div class="send-button">
-                            <!-- Check how to redirect to send messages -->
-                            <a class="btn">Send <i class="fa fa-send"></i></a>
+                            <form action = "{% url 'send_message' %}" method = "POST">
+                                <input class="no-resize-bar form-control" rows="2" placeholder="Write a message..." name="{{ current_chat }}" id="message_text">
+                                <button type="submit" class="send-button" > Send <i class="fa fa-send"></i></button>
+                            </form>>
                         </div>
                     </div>
                 </div>
-
             </div>
 
             <!--Sliding Menu / Conversation Members-->
@@ -134,11 +151,14 @@
                     {% for participant in participants %}
                     <div class="contact">
                         <div class="media-body">
-                            <h5 class="media-heading">participant.identity</h5>
+                            <h5 class="media-heading">{{participant.identity}}</h5>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
+
+                <!--Add Participant Button-->
+            
             </div>
         </div>
             </div>
@@ -147,7 +167,7 @@
 
         {% else %}
             <div class="p-3 bg-warning text-black text-left">
-                <h1>Buddies for Studdies Home</h1>
+                <h1>Buddies for Studies Home</h1>
             </div>
             <div class="container p-4 my-2 border">
                 <header>
