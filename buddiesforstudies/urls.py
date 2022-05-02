@@ -1,7 +1,9 @@
 
-from django.urls import path, re_path
+from django.urls import include, path, re_path
 from django.contrib.auth.views import LogoutView
-
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.views.generic.base import RedirectView
+from django.conf import settings
 from . import views
 
 
@@ -26,5 +28,6 @@ urlpatterns = [
     path('info_input', views.input_information, name='info'),
     path('info_input/submit', views.info_submit, name='info_submit'),
     path('matching', views.match, name='matching'),
-    path('clear_matches', views.clearmatches, name = 'clear')
+    path('clear_matches', views.clearmatches, name = 'clear'),
+    path("favicon.ico", RedirectView.as_view(url=staticfiles_storage.url("favicon.ico")),)
 ]

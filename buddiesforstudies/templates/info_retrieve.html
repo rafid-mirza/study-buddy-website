@@ -2,6 +2,8 @@
 {% load socialaccount %}
 <html lang="en">
     <head>
+        {% load static %}
+        <link rel="icon"href="{% static 'favicon.ico' %}">
         <title>{{user.username}} information</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -56,7 +58,7 @@
                                 </li> <li>
                                     My Year: <input type="text" name="year" value="{{u.year}}">
                                 </li> <li>
-                                    My seriousness (1-10): <input type="text" name="seriousness" value="{{u.level_of_seriousness}}">
+                                    My seriousness (1 (not serious)-10 (serious)): <input type="text" name="seriousness" value="{{u.level_of_seriousness}}">
                                 </li>
                             </ul>
                             <input type="submit" value="Confirm!">
@@ -68,13 +70,13 @@
                             {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
                             <ul>
                                 <li>
-                            My Name: <input type="text" name="name">
+                            My Name: <input type="text" name="name" placeholder="Thomas Jefferson">
                                     </li> <li>
-                            My Major: <input type="text" name="major">
+                            My Major: <input type="text" name="major" placeholder="Computer Science">
                                 </li> <li>
-                            My Year: <input type="text" name="year">
+                            My Year: <input type="text" name="year" placeholder="1">
                                 </li> <li>
-                            My seriousness (1-10): <input type="text" name="seriousness">
+                            My seriousness (1 (not serious)-10 (serious)): <input type="text" name="seriousness" placeholder="10">
                                 </li>
                                 </ul>
                             <input type="submit" value="Confirm!">

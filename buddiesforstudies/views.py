@@ -24,7 +24,7 @@ def input_information(request):
     return render(request, 'info_retrieve.html')
 
 def info_submit(request):
-    major_input = request.POST.get('major')
+    major_input = request.POST.get('major').upper()
     level_of_seriousness_input = request.POST.get('seriousness')
     name_input = request.POST.get('name')
     year_input = request.POST.get('year')
@@ -63,9 +63,9 @@ def add_class(request):
 
 
 def submit(request):
-    aclass = classes(title = request.POST['title'], user = request.user)
+    aclass = classes(title = request.POST['title'].upper(), user = request.user)
     try:
-        classes.objects.get(title = request.POST['title'], user = request.user)
+        classes.objects.get(title = request.POST['title'].upper(), user = request.user)
     except (KeyError, classes.DoesNotExist):
         if aclass.title in jsonData.objects.get(label="classes").classes_list:
             aclass.save()
