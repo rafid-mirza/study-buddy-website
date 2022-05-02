@@ -1,13 +1,10 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
-from django.conf import settings
-from .models import classes, jsonData, toggled_classes, participant, conversation
-from django.views.generic import CreateView
 import os
 from twilio.rest import Client
 from django.views.generic import CreateView, UpdateView, DeleteView
-from .models import classes, jsonData, toggled_classes, Location, user_info, Room
+from .models import classes, jsonData, toggled_classes, Location, user_info, participant, conversation
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import LocationForm
 from django.db.models import Q
