@@ -131,8 +131,8 @@ def untoggle(request):
 
 
 def messages_home(request):
-    account_sid = os.environ['TWILIO_ACCOUNT_SID']
-    auth_token = os.environ['TWILIO_AUTH_TOKEN']
+    account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+    auth_token = os.getenv('TWILIO_AUTH_TOKEN')
     client = Client(account_sid, auth_token)
 
     # Checks if user already exists in models, and if it does it gets the user id
@@ -173,8 +173,8 @@ def messages_home(request):
 
 
 def create_chat_one(request):
-    account_sid = os.environ['TWILIO_ACCOUNT_SID']
-    auth_token = os.environ['TWILIO_AUTH_TOKEN']
+    account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+    auth_token = os.getenv('TWILIO_AUTH_TOKEN')
     client = Client(account_sid, auth_token)
     friendly_name = request.POST['new_chat']
     chat = client.conversations.conversations.create(friendly_name=friendly_name)
@@ -192,8 +192,8 @@ def create_chat_one(request):
 
 
 def send_message(request):
-    account_sid = os.environ['TWILIO_ACCOUNT_SID']
-    auth_token = os.environ['TWILIO_AUTH_TOKEN']
+    account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+    auth_token = os.getenv('TWILIO_AUTH_TOKEN')
     client = Client(account_sid, auth_token)
     message = client.conversations.conversations(request.POST["conversation_id"]).messages.create(
         author=request.user.username, body=request.POST["message"])
@@ -202,8 +202,8 @@ def send_message(request):
 
 def display_messages(request, current_chat):
     # Checks for chats the user is in but this version keeps the spot in the messages list
-    account_sid = os.environ['TWILIO_ACCOUNT_SID']
-    auth_token = os.environ['TWILIO_AUTH_TOKEN']
+    account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+    auth_token = os.getenv('TWILIO_AUTH_TOKEN')
     client = Client(account_sid, auth_token)
     chats = []
     for chat in conversation.objects.all():
@@ -234,8 +234,8 @@ def change_chats(request):
 
 
 def add_participant(request):
-    account_sid = os.environ['TWILIO_ACCOUNT_SID']
-    auth_token = os.environ['TWILIO_AUTH_TOKEN']
+    account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+    auth_token = os.getenv('TWILIO_AUTH_TOKEN')
     client = Client(account_sid, auth_token)
     name_of_chat = request.POST['current_chat']
     new_participant = request.POST['participant_text']
