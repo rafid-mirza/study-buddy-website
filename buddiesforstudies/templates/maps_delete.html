@@ -1,0 +1,18 @@
+{% extends "core.html" %}
+{% load bootstrap5 %}
+{% block content %}
+<style>
+    div {text-align: center;}
+</style>
+<div>
+    <form method="post">
+        {% csrf_token %}
+        <strong>This will delete the session for ALL buddies. Continue?</strong>
+        <br>
+        <br>
+        <a class="btn btn-primary btn-lg" href="{%url 'index' %}" role="button">Go Back</a>
+        <input class="btn btn-danger text-light btn-lg" type="submit" value="Delete">
+    </form>
+    {{ form.media }}
+</div>
+{% endblock %}

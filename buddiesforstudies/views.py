@@ -5,7 +5,7 @@ from django.conf import settings
 from twilio.jwt.access_token import AccessToken
 from twilio.jwt.access_token.grants import ChatGrant
 from .models import classes, jsonData, toggled_classes, Room
-from django.views.generic import CreateView
+from django.views.generic import CreateView, UpdateView, DeleteView
 from .models import classes, jsonData, toggled_classes, Location, user_info
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import LocationForm
@@ -16,7 +16,7 @@ def index(request):
     if not request.user.is_authenticated:
         return render(request, 'login.html',{})
     return render(request, 'login.html',{
-        'locations': Location.objects.filter(Q(user_1=request.user) | Q(user_2=request.user)).order_by('date', 'time')
+        'locations': Location.objects.filter(users__in = [request.user]).order_by('date', 'time')
         })
 
 def input_information(request):
@@ -177,21 +177,44 @@ class AddLocationView(LoginRequiredMixin, CreateView):
     template_name = "maps.html"
     success_url = "/buddiesforstudies/"
     def form_valid(self, form):
-        form.instance.user_2 = self.request.user
-        return super().form_valid(form)
+        instance = form.save(commit=False)
+        instance.save()
+        form.save_m2m()
+        instance.users.add(self.request.user)
+        return HttpResponseRedirect(reverse('index'))
+    def get_form_kwargs(self):
+        kwargs = super(AddLocationView, self).get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+
+class UpdateLocationView(LoginRequiredMixin, UpdateView):
+    model = Location
+    form_class = LocationForm
+    template_name = "maps.html"
+    success_url = "/buddiesforstudies/"
+    def form_valid(self, form):
+        instance = form.save(commit=False)
+        instance.save()
+        form.save_m2m()
+        instance.users.add(self.request.user)
+        return HttpResponseRedirect(reverse('index'))
+    def get_form_kwargs(self):
+        kwargs = super(UpdateLocationView, self).get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+
+def remove_user(request, id):
+    location = Location.objects.get(id = id)
+    location.users.remove(request.user)
+    return HttpResponseRedirect(reverse('index'))
+
+class DeleteLocationView(LoginRequiredMixin, DeleteView):
+    model = Location
+    template_name = "maps_delete.html"
+    success_url = "/buddiesforstudies/"
 
 
 
-def UpdateLocation(request, id):
-    location = Location.objects.get(id=id)
-    if request.method == 'POST':
-        form = LocationForm(request.POST, instance = location)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect(reverse('maps'))
-    else:
-        form = LocationForm(instance = location)
-    return render(request, 'update_session.html', {'form':form, 'authorized': [location.user_1, location.user_2, location.user_3]})
 
 
 def major_evaluation(request, candidateusers):
