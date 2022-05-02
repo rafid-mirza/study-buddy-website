@@ -133,14 +133,19 @@ def create_chat_one(request):
     account_sid = os.environ['TWILIO_ACCOUNT_SID']
     auth_token = os.environ['TWILIO_AUTH_TOKEN']
     client = Client(account_sid, auth_token)
-    friendly_name = request.POST['name']
+    friendly_name = request.POST['new_chat']
     chat = client.conversations.conversations.create(friendly_name=friendly_name)
     chat_object = conversation(friendly_name=friendly_name, chat_id=chat.sid)
+    chat_object.save()
     member = client.conversations.conversations(chat_object.chat_id).participants.create(
         identity=request.user.username)
+    try:
+        chat_object.participants.add(participant.objects.get(identity=request.user.username))
+    except (KeyError, participant.DoesNotExist):
+        temp_participant = participant(identity=member.identity, user_id=member.sid)
+        chat_object.participants.add(temp_participant)
     chat_object.save()
-    chat_object.participants.add(participant.objects.get(identity=request.user.username))
-    return display_messages(request)
+    return display_messages(request, chat_object)
 
 
 def send_message(request):
@@ -189,9 +194,15 @@ def add_participant(request):
     account_sid = os.environ['TWILIO_ACCOUNT_SID']
     auth_token = os.environ['TWILIO_AUTH_TOKEN']
     client = Client(account_sid, auth_token)
-    current_chat = request.POST['current_chat']
+    name_of_chat = request.POST['current_chat']
     new_participant = request.POST['participant_text']
+    current_chat = None
+    for chat in conversation.objects.all():
+        if chat.friendly_name == name_of_chat:
+            current_chat = chat
 
+
+    #client.conversations.conversations(current_chat.chat_id).participants.create(identity=new_participant)
     return display_messages(request, current_chat)
 
 
