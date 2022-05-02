@@ -11,11 +11,9 @@ class Location(models.Model):
     address = AddressAutoHiddenField(default = "")
     def __str__(self):
         return self.address
-    user_1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_1', null = TRUE)
-    user_2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_2', null = TRUE)
-    user_3 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_3', null = TRUE)
     date = models.DateField(null=TRUE)
     time = models.TimeField(null=TRUE)
+    users = models.ManyToManyField(User)
 
 
 class user_info(models.Model):

@@ -53,21 +53,23 @@
           <h3>Upcoming Study Sessions:</h3>
         </header>
         {% if locations %}
+        {% for location in locations %}
+        <div class="container p-4 my-2 border">
           <ul>
-          {% for location in locations %}
-            <li>{{location.address}} - <a href = "{% url 'update' location.id%}">EDIT </a></li>
-          <ul>
-            <li>{{location.user_1}} and {{location.user_2}}
-            {% if location.user_3 %}
-              and {{location.user_3}}</li>
-            {% else %}
-              </li>
-            {%endif%}
-            <li>{{location.date}}</li>
-            <li>{{location.time}}</li>
+            <li>Location: {{location.address}}</li>
+            <li>Buddies:
+              <ul>
+                {%for user in location.users.all%}
+                <li>{{user}}</li>
+                {%endfor%}
+              </ul>
+            </li>
+            <li>Date: {{location.date}}</li>
+            <li>Time: {{location.time}}</li>
           </ul>
-          {% endfor %}
-          </ul>
+          <a class="btn btn-primary" href="{%url 'update' location.pk %}" role="button">Edit</a>
+        </div>
+        {% endfor %}
         {% else %}
           <p>You do not have any sessions scheduled</p>
         {% endif %}
