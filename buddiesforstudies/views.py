@@ -7,7 +7,7 @@ from twilio.jwt.access_token.grants import ChatGrant
 from .models import classes, jsonData, toggled_classes, Room
 from django.views.generic import CreateView, UpdateView, DeleteView
 from .models import classes, jsonData, toggled_classes, Location, user_info
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .forms import LocationForm
 from django.db.models import Q
 
@@ -171,11 +171,15 @@ def token(request):
 
 
 
-class AddLocationView(LoginRequiredMixin, CreateView):
+class AddLocationView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Location
     form_class = LocationForm
     template_name = "maps.html"
     success_url = "/buddiesforstudies/"
+    def test_func(self):
+        return len(self.request.user.user_info_set.all()) > 0
+    def handle_no_permission(self):
+        return HttpResponseRedirect(reverse('matching'))
     def form_valid(self, form):
         instance = form.save(commit=False)
         instance.save()
