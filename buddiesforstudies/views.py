@@ -5,7 +5,7 @@ from django.conf import settings
 from twilio.jwt.access_token import AccessToken
 from twilio.jwt.access_token.grants import ChatGrant
 from .models import classes, jsonData, toggled_classes, Room
-from django.views.generic import CreateView, UpdateView
+from django.views.generic import CreateView, UpdateView, DeleteView
 from .models import classes, jsonData, toggled_classes, Location, user_info
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import LocationForm
@@ -202,6 +202,16 @@ class UpdateLocationView(LoginRequiredMixin, UpdateView):
         kwargs = super(UpdateLocationView, self).get_form_kwargs()
         kwargs['request'] = self.request
         return kwargs
+
+def remove_user(request, id):
+    location = Location.objects.get(id = id)
+    location.users.remove(request.user)
+    return HttpResponseRedirect(reverse('index'))
+
+class DeleteLocationView(LoginRequiredMixin, DeleteView):
+    model = Location
+    template_name = "maps_delete.html"
+    success_url = "/buddiesforstudies/"
 
 
 

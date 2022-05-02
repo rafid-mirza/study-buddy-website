@@ -68,6 +68,10 @@
             <li>Time: {{location.time}}</li>
           </ul>
           <a class="btn btn-primary" href="{%url 'update' location.pk %}" role="button">Edit</a>
+          {% if location.users.all|length > 1 %}
+          <a class="btn btn-primary" href="{%url 'remove' location.id %}" role="button">Remove</a>
+          {%endif%}
+          <a class="btn btn-danger" href="{%url 'delete' location.pk %}" role="button">Delete</a>
         </div>
         {% endfor %}
         {% else %}
