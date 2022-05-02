@@ -1,0 +1,74 @@
+<div class="p-3 bg-warning text-black text-left">
+  <h1>Buddies for Studdies Login</h1>
+</div>
+
+{% load i18n %}
+{% load account socialaccount %}
+
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en"></html>
+<head>
+  <title>Buddies for Studdies</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {# Load the tag library #}
+  {% load bootstrap5 %}
+
+  {# Load CSS and JavaScript #}
+  {% bootstrap_css %}
+  {% bootstrap_javascript %}
+</head>
+<body class="d-flex flex-column min-vh-100">
+  <div class="container p-4 my-2 border">
+<h3>{% trans "Sign In" %}</h3>
+
+{% get_providers as socialaccount_providers %}
+
+{% if socialaccount_providers %}
+<p>{% blocktrans with site.name as site_name %}Please sign in with one
+of your existing third party accounts. Or, <a href="{{ signup_url }}">sign up</a>
+for a {{ site_name }} account and sign in below:{% endblocktrans %}</p>
+
+<div class="socialaccount_ballot">
+
+  <ul class="socialaccount_providers">
+    {% include "socialaccount/snippets/provider_list.html" with process="login" %}
+  </ul>
+
+  <div class="login-or"></div>
+
+</div>
+
+{% include "socialaccount/snippets/login_extra.html" %}
+</div>
+
+{% else %}
+<p>{% blocktrans %}If you have not created an account yet, then please
+<a href="{{ signup_url }}">sign up</a> first.{% endblocktrans %}</p>
+{% endif %}
+<div class="container p-4 my-2 border">
+  <header>
+    <h3>{% trans "Log In" %}</h3>
+  </header>
+<form class="login" method="POST" action="{% url 'account_login' %}">
+  {% csrf_token %}
+  {{ form.as_p }}
+  {% if redirect_field_value %}
+  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+  {% endif %}
+  <button class="primaryAction" type="submit">{% trans "Sign In" %}</button>
+</form>
+</div>
+
+<footer class="footer mt-auto py-3 bg-light">
+  <div class="container text-center">
+    <span class="text-muted">UVA CS 3240 B-15</span>
+  </div>
+</footer>
+
+</body>
+</html>
+{% endblock %}
+

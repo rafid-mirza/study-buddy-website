@@ -4,7 +4,7 @@
   <head>
     {% load static %}
     <link rel="icon"href="{% static 'favicon.ico' %}">
-    <title>Buddies for Studdies</title>
+    <title>Classes</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {# Load the tag library #}
@@ -18,7 +18,7 @@
   <body class="d-flex flex-column min-vh-100">
     {% if user.is_authenticated %}
       <div class="p-2 bg-warning text-black text-left">
-        <h1>Buddies for Studdies Home</h1>
+        <h1>Buddies for Studdies</h1>
       </div>
 
       <!-- A grey horizontal navbar that becomes vertical on small screens -->
@@ -27,7 +27,7 @@
           <!-- Links -->
           <ul class="navbar-nav">
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'classes_view' %}">Classes</a>
+              <a class="nav-link" href="{% url 'index' %}">Home</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'matching' %}">Find Matches</a>
@@ -44,41 +44,38 @@
         </div>
       </nav>
 
-      <div class="container p-2 my-2 border">
+      <div class="container p-4 my-2 border">
         <header>
-          <h3>Welcome, {{ user.username }}!</h3>
+          <h3>My Classes:</h3>
         </header>
+        {% if user.classes_set.all %}
+          <ul>
+          {% for class in user.classes_set.all %}
+            <li>{{class}}</li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          <p>You do not have any classes added</p>
+        {% endif %}
+        <a href="{% url 'add_class' %}">Add a Class</a>
+        <a href="{% url 'remove_class' %}">Remove a Class</a>
       </div>
 
       <div class="container p-4 my-2 border">
         <header>
-          <h3>Upcoming Study Sessions:</h3>
+          <h3>Toggled Classes:</h3>
         </header>
-        {% if locations %}
-        {% for location in locations %}
-        <div class="container p-4 my-2 border">
+        {% if user.toggled_classes_set.all %}
           <ul>
-            <li>Location: {{location.address}}</li>
-            <li>Buddies:
-              <ul>
-                {%for user in location.users.all%}
-                <li>{{user}}</li>
-                {%endfor%}
-              </ul>
-            </li>
-            <li>Date: {{location.date}}</li>
-            <li>Time: {{location.time}}</li>
+            {% for class in user.toggled_classes_set.all %}
+              <li>{{class}}</li>
+            {% endfor %}
           </ul>
-          <a class="btn btn-primary" href="{%url 'update' location.pk %}" role="button">Edit</a>
-          {% if location.users.all|length > 1 %}
-          <a class="btn btn-primary" href="{%url 'remove' location.id %}" role="button">Remove</a>
-          {%endif%}
-          <a class="btn btn-danger" href="{%url 'delete' location.pk %}" role="button">Delete</a>
-        </div>
-        {% endfor %}
         {% else %}
-          <p>You do not have any sessions scheduled</p>
+          <p>You do not have any classes toggled</p>
         {% endif %}
+        <a href="{% url 'toggle_class' %}"> Toggle Classes</a>
+        <a href="{% url 'untoggle_class' %}"> Untoggle Classes</a>
       </div>
 
     {% else %}

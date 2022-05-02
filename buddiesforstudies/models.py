@@ -1,14 +1,31 @@
+from pickle import TRUE
 from django.db import models
 from django.contrib.auth.models import User
 import requests
 from django import forms
 from mapbox_location_field.models import LocationField, AddressAutoHiddenField
 
-class Location(models.Model):  
+
+class Location(models.Model):
     location = LocationField( map_attrs={"center": (-78.50, 38.04)})
     address = AddressAutoHiddenField(default = "")
     def __str__(self):
-        return self.address 
+        return self.address
+    date = models.DateField(null=TRUE)
+    time = models.TimeField(null=TRUE)
+    users = models.ManyToManyField(User)
+
+
+class user_info(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name =  models.CharField(max_length=128)
+    year = models.CharField(max_length=1)
+    major = models.CharField(max_length=128)
+    level_of_seriousness =  models.CharField(max_length=2)
+    match_students = models.CharField(max_length = 1000, default = "")
+
+    def __str__(self):
+        return self.name
 
 
 class user(models.Model):
