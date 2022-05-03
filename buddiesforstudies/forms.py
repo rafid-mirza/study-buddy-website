@@ -2,6 +2,7 @@ from django import forms
 from django.forms import ModelForm
 from .models import Location, User
 from django.db.models import Q
+import datetime
 
 class DateInput(forms.DateInput):
     input_type = 'date'
@@ -29,4 +30,14 @@ class LocationForm(ModelForm):#https://medium.com/swlh/django-forms-for-many-to-
             'date': DateInput(),
             'time': TimeInput(),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        date = cleaned_data.get("date")
+        time = cleaned_data.get("time")
+
+        if datetime.datetime.combine(date,time) < datetime.datetime.now():
+            msg = "Must be future date"
+            self.add_error('date', msg)
+            self.add_error('time', msg)
     users = forms.ModelMultipleChoiceField(queryset=None, widget=forms.CheckboxSelectMultiple)
