@@ -24,10 +24,22 @@ def input_information(request):
     return render(request, 'info_retrieve.html')
 
 def info_submit(request):
-    major_input = request.POST.get('major').upper()
-    level_of_seriousness_input = request.POST.get('seriousness')
-    name_input = request.POST.get('name')
-    year_input = request.POST.get('year')
+    if request.POST.get('major').upper():
+        major_input = request.POST.get('major').upper()
+    else:
+        return render(request, 'info_retrieve.html', {'error_message': "A major must be entered."})
+    if request.POST.get('seriousness'):
+        level_of_seriousness_input = request.POST.get('seriousness')
+    else:
+        return render(request, 'info_retrieve.html', {'error_message': "An interest level must be entered."})
+    if request.POST.get('name'):
+        name_input = request.POST.get('name')
+    else:
+        return render(request, 'info_retrieve.html', {'error_message': "A name must be entered."})
+    if request.POST.get('year'):
+        year_input = request.POST.get('year')
+    else:
+        return render(request, 'info_retrieve.html', {'error_message': "A year must be entered."})
 
     if len(name_input) > 128:
         return render(request, 'info_retrieve.html', {'error_message': "Name cannot exceed 128 characters"})
@@ -38,15 +50,18 @@ def info_submit(request):
         float(year_input)
     except ValueError:
         not_a_number = True
-    if len(year_input) > 1 or not_a_number:
-        return render(request, 'info_retrieve.html', {'error_message': "Year must be a number 1-9"})
+    if (year_input != "1" and year_input != "2" and year_input != "3" and year_input != "4") or not_a_number:
+        return render(request, 'info_retrieve.html', {'error_message': "Year must be a number between 1 and 4"})
     not_a_number = False
     try:
         float(level_of_seriousness_input)
     except ValueError:
         not_a_number = True
-    if (len(level_of_seriousness_input) > 1 and level_of_seriousness_input != "10") or not_a_number:
-        return render(request, 'info_retrieve.html', {'error_message': "Interest must be a number 1-10"})
+    if (level_of_seriousness_input != "1" and level_of_seriousness_input != "2" and level_of_seriousness_input != "3" and
+    level_of_seriousness_input != "4" and level_of_seriousness_input != "5" and level_of_seriousness_input != "6" and
+    level_of_seriousness_input != "7" and level_of_seriousness_input != "8" and level_of_seriousness_input != "9" and
+    level_of_seriousness_input != "10") or not_a_number:
+        return render(request, 'info_retrieve.html', {'error_message': "Interest level must be a number between 1 and 10"})
     queryset = user_info.objects.filter(user = request.user)
     if len(queryset) > 0:
         queryset[0].delete()
