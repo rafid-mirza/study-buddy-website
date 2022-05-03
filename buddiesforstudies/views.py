@@ -25,29 +25,60 @@ def input_information(request):
     return render(request, 'info_retrieve.html')
 
 def info_submit(request):
-    major_input = request.POST.get('major').upper()
-    level_of_seriousness_input = request.POST.get('seriousness')
-    name_input = request.POST.get('name')
-    year_input = request.POST.get('year')
+    if request.POST.get('major').upper():
+        major_input = request.POST.get('major').upper()
+    else:
+        return render(request, 'info_retrieve.html', {'error_message': "A major must be entered."})
+    if request.POST.get('seriousness'):
+        level_of_seriousness_input = request.POST.get('seriousness')
+    else:
+        return render(request, 'info_retrieve.html', {'error_message': "An interest level must be entered."})
+    if request.POST.get('name'):
+        name_input = request.POST.get('name')
+    else:
+        return render(request, 'info_retrieve.html', {'error_message': "A name must be entered."})
+    if request.POST.get('year'):
+        year_input = request.POST.get('year')
+    else:
+        return render(request, 'info_retrieve.html', {'error_message': "A year must be entered."})
 
     if len(name_input) > 128:
         return render(request, 'info_retrieve.html', {'error_message': "Name cannot exceed 128 characters"})
     if len(major_input) > 128:
         return render(request, 'info_retrieve.html', {'error_message': "Major title cannot exceed 128 characters"})
+    is_a_number = False
+    try:
+        float(name_input)
+        is_a_number = True
+    except ValueError:
+        pass
+    if is_a_number:
+       return render(request, 'info_retrieve.html', {'error_message': "A valid name must be entered."})
+    is_a_number2 = False
+    try:
+        float(major_input)
+        is_a_number2 = True
+    except ValueError:
+        pass
+    if is_a_number2:
+        return render(request, 'info_retrieve.html', {'error_message': "A valid major must be entered."})
     not_a_number = False
     try:
         float(year_input)
     except ValueError:
         not_a_number = True
-    if len(year_input) > 1 or not_a_number:
-        return render(request, 'info_retrieve.html', {'error_message': "Year must be a number 1-9"})
+    if (year_input != "1" and year_input != "2" and year_input != "3" and year_input != "4") or not_a_number:
+        return render(request, 'info_retrieve.html', {'error_message': "Year must be a number between 1 and 4"})
     not_a_number = False
     try:
         float(level_of_seriousness_input)
     except ValueError:
         not_a_number = True
-    if (len(level_of_seriousness_input) > 1 and level_of_seriousness_input != "10") or not_a_number:
-        return render(request, 'info_retrieve.html', {'error_message': "Interest must be a number 1-10"})
+    if (level_of_seriousness_input != "1" and level_of_seriousness_input != "2" and level_of_seriousness_input != "3" and
+    level_of_seriousness_input != "4" and level_of_seriousness_input != "5" and level_of_seriousness_input != "6" and
+    level_of_seriousness_input != "7" and level_of_seriousness_input != "8" and level_of_seriousness_input != "9" and
+    level_of_seriousness_input != "10") or not_a_number:
+        return render(request, 'info_retrieve.html', {'error_message': "Interest level must be a number between 1 and 10"})
     queryset = user_info.objects.filter(user = request.user)
     if len(queryset) > 0:
         queryset[0].delete()
@@ -102,6 +133,7 @@ def toggle_class(request):
 
 
 def toggle(request):
+    class_already_toggled = False
     if request.method == 'POST':
         choice = request.POST.getlist('choice')
         if not choice:
@@ -109,11 +141,17 @@ def toggle(request):
         else:
             for i in choice:
                 if toggled_classes.objects.filter(title=i,user=request.user).exists():
-                    return render(request, 'toggle_class.html', {'error_message': "One or more of these classes has already been toggled."})
+                    class_already_toggled = True
+                    break
                 else:
+                    class_already_toggled = False
+            if class_already_toggled == True:
+                return render(request, 'toggle_class.html', {'error_message': "One or more of these classes has already been toggled."})
+            else:
+                for i in choice:
                     class_to_toggle = toggled_classes(title=i, user=request.user)
                     class_to_toggle.save()
-            return HttpResponseRedirect(reverse('classes_view'))
+                return HttpResponseRedirect(reverse('classes_view'))
 
 
 def untoggle_class(request):
