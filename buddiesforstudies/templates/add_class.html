@@ -18,7 +18,7 @@
     <body class="d-flex flex-column min-vh-100">
         {% if user.is_authenticated %}
             <div class="p-2 bg-warning text-black text-left">
-                <h1>Buddies for Studdies</h1>
+                <h1>Buddies for Studies</h1>
             </div>
         
             <!-- A grey horizontal navbar that becomes vertical on small screens -->
@@ -33,7 +33,7 @@
                             <a class="nav-link" href="{% url 'matching' %}">Find Matches</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'all_rooms' %}">Messages</a>
+                            <a class="nav-link" href="{% url 'message_start' %}">Messages</a>
                         </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
@@ -59,7 +59,7 @@
 
         {% else %}
             <div class="p-3 bg-warning text-black text-left">
-                <h1>Buddies for Studdies Home</h1>
+                <h1>Buddies for Studies Home</h1>
             </div>
             <div class="container p-4 my-2 border">
                 <header>

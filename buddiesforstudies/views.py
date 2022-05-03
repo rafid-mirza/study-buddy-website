@@ -1,12 +1,13 @@
-from django.shortcuts import render
+from django import views
+from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
-from django.conf import settings
-from twilio.jwt.access_token import AccessToken
-from twilio.jwt.access_token.grants import ChatGrant
-from .models import classes, jsonData, toggled_classes, Room
+import os
+
+from dotenv import load_dotenv
+from twilio.rest import Client
 from django.views.generic import CreateView, UpdateView, DeleteView
-from .models import classes, jsonData, toggled_classes, Location, user_info
+from .models import classes, jsonData, toggled_classes, Location, user_info, participant, conversation
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .forms import LocationForm
 from django.db.models import Q
@@ -25,29 +26,60 @@ def input_information(request):
     return render(request, 'info_retrieve.html')
 
 def info_submit(request):
-    major_input = request.POST.get('major').upper()
-    level_of_seriousness_input = request.POST.get('seriousness')
-    name_input = request.POST.get('name')
-    year_input = request.POST.get('year')
+    if request.POST.get('major').upper():
+        major_input = request.POST.get('major').upper()
+    else:
+        return render(request, 'info_retrieve.html', {'error_message': "A major must be entered."})
+    if request.POST.get('seriousness'):
+        level_of_seriousness_input = request.POST.get('seriousness')
+    else:
+        return render(request, 'info_retrieve.html', {'error_message': "An interest level must be entered."})
+    if request.POST.get('name'):
+        name_input = request.POST.get('name')
+    else:
+        return render(request, 'info_retrieve.html', {'error_message': "A name must be entered."})
+    if request.POST.get('year'):
+        year_input = request.POST.get('year')
+    else:
+        return render(request, 'info_retrieve.html', {'error_message': "A year must be entered."})
 
     if len(name_input) > 128:
         return render(request, 'info_retrieve.html', {'error_message': "Name cannot exceed 128 characters"})
     if len(major_input) > 128:
         return render(request, 'info_retrieve.html', {'error_message': "Major title cannot exceed 128 characters"})
+    is_a_number = False
+    try:
+        float(name_input)
+        is_a_number = True
+    except ValueError:
+        pass
+    if is_a_number:
+       return render(request, 'info_retrieve.html', {'error_message': "A valid name must be entered."})
+    is_a_number2 = False
+    try:
+        float(major_input)
+        is_a_number2 = True
+    except ValueError:
+        pass
+    if is_a_number2:
+        return render(request, 'info_retrieve.html', {'error_message': "A valid major must be entered."})
     not_a_number = False
     try:
         float(year_input)
     except ValueError:
         not_a_number = True
-    if len(year_input) > 1 or not_a_number:
-        return render(request, 'info_retrieve.html', {'error_message': "Year must be a number 1-9"})
+    if (year_input != "1" and year_input != "2" and year_input != "3" and year_input != "4") or not_a_number:
+        return render(request, 'info_retrieve.html', {'error_message': "Year must be a number between 1 and 4"})
     not_a_number = False
     try:
         float(level_of_seriousness_input)
     except ValueError:
         not_a_number = True
-    if (len(level_of_seriousness_input) > 1 and level_of_seriousness_input != "10") or not_a_number:
-        return render(request, 'info_retrieve.html', {'error_message': "Interest must be a number 1-10"})
+    if (level_of_seriousness_input != "1" and level_of_seriousness_input != "2" and level_of_seriousness_input != "3" and
+    level_of_seriousness_input != "4" and level_of_seriousness_input != "5" and level_of_seriousness_input != "6" and
+    level_of_seriousness_input != "7" and level_of_seriousness_input != "8" and level_of_seriousness_input != "9" and
+    level_of_seriousness_input != "10") or not_a_number:
+        return render(request, 'info_retrieve.html', {'error_message': "Interest level must be a number between 1 and 10"})
     queryset = user_info.objects.filter(user = request.user)
     if len(queryset) > 0:
         queryset[0].delete()
@@ -82,7 +114,7 @@ def remove_class(request):
 
 def remove(request):
     try:
-        aclass = classes.objects.get(title = request.POST['choice'], user = request.user)
+        aclass = classes.objects.get(title=request.POST['choice'], user=request.user)
         aclass2 = toggled_classes.objects.get(title=request.POST['choice'], user=request.user)
     except (KeyError, classes.DoesNotExist):
         # Redisplay the class removing form.
@@ -102,6 +134,7 @@ def toggle_class(request):
 
 
 def toggle(request):
+    class_already_toggled = False
     if request.method == 'POST':
         choice = request.POST.getlist('choice')
         if not choice:
@@ -109,11 +142,17 @@ def toggle(request):
         else:
             for i in choice:
                 if toggled_classes.objects.filter(title=i,user=request.user).exists():
-                    return render(request, 'toggle_class.html', {'error_message': "One or more of these classes has already been toggled."})
+                    class_already_toggled = True
+                    break
                 else:
+                    class_already_toggled = False
+            if class_already_toggled == True:
+                return render(request, 'toggle_class.html', {'error_message': "One or more of these classes has already been toggled."})
+            else:
+                for i in choice:
                     class_to_toggle = toggled_classes(title=i, user=request.user)
                     class_to_toggle.save()
-            return HttpResponseRedirect(reverse('classes_view'))
+                return HttpResponseRedirect(reverse('classes_view'))
 
 
 def untoggle_class(request):
@@ -133,43 +172,157 @@ def untoggle(request):
             return HttpResponseRedirect(reverse('classes_view'))
 
 
-def all_rooms(request):
-    rooms = Room.objects.all()
-    return render(request, 'room_index.html', {'rooms': rooms})
+def messages_home(request, current_chat=None, error_message=None):
+    load_dotenv()
+    account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+    auth_token = os.getenv('TWILIO_AUTH_TOKEN')
+    client = Client(account_sid, auth_token)
+    configuration = client.conversations \
+        .configuration() \
+        .update(default_chat_service_sid=os.getenv('TWILIO_CHAT_SERVICE_SID'))
+
+    # Checks if user already exists in models, and if it does it gets the user id
+    user_id = None
+    for member in participant.objects.all():
+        if member.identity == request.user.username:
+            user_id = member.user_id
+    if user_id is None:
+        for second_check in client.conversations.users.list():
+            if second_check.identity == request.user.username:
+                user_id = second_check.sid
+                temp_participant = participant(user_id=user_id, identity=request.user.username)
+                temp_participant.save()
+
+    if user_id is None:
+        user = client.conversations.users.create(identity=request.user.username)
+        temp_participant = participant(user_id=user.sid, identity=request.user.username)
+        temp_participant.save()
+
+    # Checks for chats the user is in
+    chats = []
+    for chat in conversation.objects.all():
+        for member in chat.participants.all():
+            if member.identity is request.user.username:
+                chats.append(chat)
+    chat_messages = []
+    chat_participants = []
+    other_users = []
+    current_chat_name = ''
+    if chats:
+        if request.POST.get('current_chat') is None:
+            current_chat = chats[0]
+        current_chat_name = current_chat.friendly_name
+        participants = client.conversations.conversations(current_chat.chat_id).participants.list()
+        for chatMember in participants:
+            chat_participants.append(chatMember['identity'])
+        users = user_info.user.objects.all()
+        for a_user in users:
+            if a_user not in participants:
+                other_users.append(a_user.username)
+        messages = client.conversations.conversations(chats[0].chat_id).messages.list()
+        for message in messages['messages']:
+            chat_messages.append([message['body'], message['author'], message['date_updated']])
+    if error_message is not None:
+        return render(request, 'messages.html', {'conversations': chats, 'messages': chat_messages,
+                                                'participants': chat_participants, 'current_chat': current_chat_name,
+                                                'other_users': other_users, 'error_message': error_message})
+    return render(request, 'messages.html', {'conversations': chats, 'messages': chat_messages,
+                                            'participants': chat_participants, 'current_chat': current_chat_name,
+                                            'other_users': other_users})
 
 
-def room_detail(request, slug):
-    room = Room.objects.get(slug=slug)
-    return render(request, 'room_detail.html', {'room': room})
+def refresh_feed(request):
+    current_chat_name = request.POST.get('current_chat')
+    if current_chat_name is None:
+        return redirect(messages_home)
+    else:
+        for convo in conversation.objects.all():
+            if convo.friendly_name == current_chat_name:
+                current_chat = convo
+                break
+        return redirect(messages_home, current_chat=current_chat)
 
 
-def token(request):
-    identity = request.user.username
-    device_id = request.GET.get('device', 'default')  # unique device ID
 
-    account_sid = settings.TWILIO_ACCOUNT_SID
-    api_key = settings.TWILIO_API_KEY
-    api_secret = settings.TWILIO_API_SECRET
-    chat_service_sid = settings.TWILIO_CHAT_SERVICE_SID
+def create_chat_one(request):
+    load_dotenv()
+    account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+    auth_token = os.getenv('TWILIO_AUTH_TOKEN')
+    client = Client(account_sid, auth_token)
 
-    user_token = AccessToken(account_sid, api_key, api_secret, identity=identity)
+    new_chat_name = request.POST.get('new_chat')
+    error_message = None
+    if new_chat_name is None:
+        return redirect(messages_home)
+    else:
+        for convo in conversation.objects.all():
+            if convo.friendly_name == new_chat_name:
+                error_message = "That name already exists"
+                break
+    if error_message is not None:
+        redirect(messages_home, error_message=error_message)
 
-    # Create a unique endpoint ID for the device
-    endpoint = "MyDjangoChatRoom:{0}:{1}".format(identity, device_id)
-
-    if chat_service_sid:
-        chat_grant = ChatGrant(endpoint_id=endpoint,
-                               service_sid=chat_service_sid)
-        user_token.add_grant(chat_grant)
-
-    response = {
-        'identity': identity,
-        'token': user_token.to_jwt().decode('utf-8')
-    }
-
-    return JsonResponse(response)
+    chat = client.conversations.conversations.create(friendly_name=new_chat_name)
+    chat_object = conversation(friendly_name=new_chat_name, chat_id=chat.sid)
+    chat_object.save()
+    member = client.conversations.conversations(chat_object.chat_id).participants.create(
+        identity=request.user.username)
+    try:
+        chat_object.participants.add(participant.objects.get(identity=request.user.username))
+    except (KeyError, participant.DoesNotExist):
+        temp_participant = participant(identity=member.identity, user_id=member.sid)
+        chat_object.participants.add(temp_participant)
+    chat_object.save()
+    return redirect(messages_home, current_chat=chat_object)
 
 
+def send_message(request):
+    load_dotenv()
+    account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+    auth_token = os.getenv('TWILIO_AUTH_TOKEN')
+    client = Client(account_sid, auth_token)
+    current_chat_name = request.POST.get('current_chat')
+    error_message = None
+    for convo in conversation.objects.all():
+        if convo.friendly_name == current_chat_name:
+            current_chat = convo
+            break
+
+    message_text = request.POST.get('message_text')
+
+    message = client.conversations.conversations(current_chat.chat_id).messages.create(
+        author=request.user.username, body=message_text)
+
+    return redirect(messages_home, current_chat=current_chat)
+
+
+def change_chats(request):
+    name_of_chat = request.POST.get('chat_name')
+    for chat in conversation.objects.all():
+        if chat.friendly_name == name_of_chat:
+            current_chat = chat
+    return redirect(messages_home, current_chat=current_chat)
+
+
+def add_participant(request):
+    load_dotenv()
+    account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+    auth_token = os.getenv('TWILIO_AUTH_TOKEN')
+    client = Client(account_sid, auth_token)
+    name_of_chat = request.POST.get('current_chat')
+    new_participant = request.POST.get('participant_text')
+    current_chat = None
+
+    for chat in conversation.objects.all():
+        if chat.friendly_name == name_of_chat:
+            current_chat = chat
+            break
+    if current_chat is None:
+        redirect(messages_home)
+    else:
+        if not (new_participant is None or new_participant == "" or new_participant == "---"):
+            client.conversations.conversations(current_chat.chat_id).participants.create(identity=new_participant)
+        return redirect(messages_home, current_chat=current_chat)
 
 
 class AddLocationView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
@@ -191,6 +344,7 @@ class AddLocationView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     def get_form_kwargs(self):
         kwargs = super(AddLocationView, self).get_form_kwargs()
         kwargs['request'] = self.request
+        kwargs['users'] = None
         return kwargs
 
 class UpdateLocationView(LoginRequiredMixin, UpdateView):
@@ -207,6 +361,8 @@ class UpdateLocationView(LoginRequiredMixin, UpdateView):
     def get_form_kwargs(self):
         kwargs = super(UpdateLocationView, self).get_form_kwargs()
         kwargs['request'] = self.request
+        kwargs['users'] = self.object.users.all()
+        print(self.object.users.all())
         return kwargs
 
 def remove_user(request, id):
@@ -315,5 +471,4 @@ def match(request):
 
         second = majormatch(request, noclass_candidates)
         return major_evaluation(request, second)
-
 

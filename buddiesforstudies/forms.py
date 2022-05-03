@@ -12,8 +12,13 @@ class TimeInput(forms.TimeInput):
 class LocationForm(ModelForm):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request')
+        users = kwargs.pop('users')
         super(LocationForm, self).__init__(*args, **kwargs)
         test2 = self.request.user.user_info_set.all()[0].match_students.replace(" ", "").split(",")
+        if users != None:
+            users = list(user.username for user in users)
+            users.remove(self.request.user.username)
+            test2 += users
         self.fields['users'].queryset = User.objects.filter(username__in = test2)
 
 
