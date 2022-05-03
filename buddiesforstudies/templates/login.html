@@ -62,7 +62,9 @@
             <li>Buddies:
               <ul>
                 {%for user in location.users.all%}
-                <li>{{user}}</li>
+                  {%if user != request.user %}
+                    <li>{{user}}</li>
+                  {%endif%}
                 {%endfor%}
               </ul>
             </li>
