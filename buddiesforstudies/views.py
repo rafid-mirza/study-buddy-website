@@ -138,6 +138,9 @@ def messages_home(request, current_chat=None, error_message=None):
     account_sid = os.getenv('TWILIO_ACCOUNT_SID')
     auth_token = os.getenv('TWILIO_AUTH_TOKEN')
     client = Client(account_sid, auth_token)
+    configuration = client.conversations \
+        .configuration() \
+        .update(default_chat_service_sid=os.getenv('TWILIO_CHAT_SERVICE_SID'))
 
     # Checks if user already exists in models, and if it does it gets the user id
     user_id = None
