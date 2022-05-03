@@ -66,7 +66,7 @@
         <div class="card">
           <div class="card-header">
               {% for d in data.user_info_set.all%}
-              <h2  class="text-center"> {{d.name}}, ({{data.username}}) Year {{d.year}} </h2>
+              <h2  class="text-center"> {{d.name}}, (@{{data.username}}) Year {{d.year}} </h2>
               {%endfor%}
           </div>
         </div>
