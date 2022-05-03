@@ -29,6 +29,7 @@ urlpatterns = [
     path('info_input', views.input_information, name='info'),
     path('info_input/submit', views.info_submit, name='info_submit'),
     path('matching', views.match, name='matching'),
+    path('matching2', views.match2, name='matching2'),
     path('clear_matches', views.clearmatches, name = 'clear'),
     path("favicon.ico", RedirectView.as_view(url=staticfiles_storage.url("favicon.ico")),)
 ]

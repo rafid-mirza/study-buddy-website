@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+{% load socialaccount %}
+<html lang="en">
+  <head>
+    {% load static %}
+    <link rel="icon"href="{% static 'favicon.ico' %}">
+        <title>Find a Match</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {# Load the tag library #}
+    {% load bootstrap5 %}
+
+    {# Load CSS and JavaScript #}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+  </head>
+
+  <body class="d-flex flex-column min-vh-100">
+    {% if user.is_authenticated %}
+      <div class="p-2 bg-warning text-black text-left">
+        <h1>Buddies for Studdies</h1>
+      </div>
+
+      <!-- A grey horizontal navbar that becomes vertical on small screens -->
+      <nav class="navbar navbar-expand-sm bg-light">
+        <div class="container-fluid">
+          <!-- Links -->
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'index' %}">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'classes_view' %}">Classes</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'all_rooms' %}">Messages</a>
+            </li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'logout' %}"></span> Logout</a>
+            </li>
+          </ul>
+        </div>
+      </nav><!DOCTYPE html>
+
+     <div class="card bg-success text-white text-center" >
+      <h1 > Click on the options below to begin matching!
+      </h1>
+     </div>
+ <div class="card text-center" >
+     <h1> </h1><h1> </h1><h1> </h1>
+      <h3 class="text-center">
+          <a class="btn btn-primary" href="{% url 'info' %}" role="button">Edit your info</a>
+          {%for u in user.user_info_set.all%}
+          {%if u.match_students != " "%}
+           <a class="btn btn-success" href="{% url 'all_rooms' %}" role="button">Talk to your matches!</a>
+          {%endif%}
+          {%endfor%}
+           <a class="btn btn-info" href="{% url 'matching' %}" role="button">Find another match!</a>
+           <a class="btn btn-dark" href="{% url 'clear' %}" role="button">Clear all matches</a>
+      </h3>
+ </div>
+        <footer class="footer mt-auto py-3">
+        <div class="container text-center">
+        <h1 >Your Matches:</h1>
+            {% for u in user.user_info_set.all %}
+            </h1>
+             <h3 >{{u.match_students}} </h3>
+               {%endfor%}
+        </div>
+    </footer>
+
+    {% else %}
+        <div class="p-3 bg-warning text-black text-left">
+            <h1>Buddies for Studdies Home</h1>
+        </div>
+        <div class="container p-4 my-2 border">
+            <header>
+            <h3>Log In:</h3>
+            </header>
+            <a href="{% provider_login_url 'google' %}">Log In</a>
+        </div>
+
+    {% endif %}
+
+
+
+    <footer class="footer mt-auto py-3 bg-light">
+        <div class="container text-center">
+        <span class="text-muted">UVA CS 3240 B-15</span>
+        </div>
+    </footer>
+
+</body>
+</html>

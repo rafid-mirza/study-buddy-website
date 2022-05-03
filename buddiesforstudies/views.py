@@ -6,7 +6,7 @@ from twilio.jwt.access_token import AccessToken
 from twilio.jwt.access_token.grants import ChatGrant
 from .models import classes, jsonData, toggled_classes, Room
 from django.views.generic import CreateView, UpdateView, DeleteView
-from .models import classes, jsonData, toggled_classes, Location, user_info
+from .models import classes, jsonData, toggled_classes, Location, user_info, User
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import LocationForm
 from django.db.models import Q
@@ -25,7 +25,7 @@ def input_information(request):
 
 def info_submit(request):
     m = request.user.user_info_set.all()[0].match_students
-    major_input = request.POST.get('major').upper()
+    major_input = request.POST.get('major').title()
     level_of_seriousness_input = request.POST.get('seriousness')
     name_input = request.POST.get('name')
     year_input = request.POST.get('year')
@@ -53,7 +53,7 @@ def info_submit(request):
         queryset[0].delete()
     ainfo = user_info(major = major_input, level_of_seriousness = level_of_seriousness_input, name = name_input, year = year_input, user = request.user, match_students = m)
     ainfo.save()
-    return HttpResponseRedirect(reverse('matching'))
+    return HttpResponseRedirect(reverse('matching2'))
 
 def classes_view(request):
     return render(request, 'classes_view.html')
@@ -231,7 +231,6 @@ def majormatch(request, candiateusers):
     return same_major
 
 def interestmatch(request, candidateusers):
-
     closest_interest = 1000000000
     match = None
     for candidate in candidateusers:
@@ -245,14 +244,26 @@ def interestmatch(request, candidateusers):
     else: return request.user
 
 def clearmatches(request):
-    user_info.objects.filter(user=request.user).update(match_students='')
-    return HttpResponseRedirect(reverse('matching'))
+    user_info.objects.filter(user=request.user).update(match_students=" ")
+    return HttpResponseRedirect(reverse('matching2'))
+
+
+# If we don't want a last match, just go back to the page.
+def match2(request):
+    if len(list(request.user.user_info_set.all())) == 0:
+        return HttpResponseRedirect(reverse('info'))
+    matches = request.user.user_info_set.all()[0].match_students.replace(" ", "").split(",")
+    if len(matches) == 0: return render(request, 'matching.html', {'data': matches})
+    last_match = matches[-1]
+    last_user = User.objects.filter(username = last_match)
+    return render(request, 'matching2.html')
+
 
 def match(request):
     if len(list(request.user.user_info_set.all())) == 0:
         return HttpResponseRedirect(reverse('info'))
     data2 = list(user_info.objects.all())
-    matches = request.user.user_info_set.all()[0].match_students.split(", ")
+    matches = request.user.user_info_set.all()[0].match_students.replace(" ", "").split(",")
     if (request.user not in matches): matches.append(request.user.username)
     data = []
     for d in data2:
