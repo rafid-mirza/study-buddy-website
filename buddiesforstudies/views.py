@@ -10,6 +10,7 @@ from .models import classes, jsonData, toggled_classes, Location, user_info
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .forms import LocationForm
 from django.db.models import Q
+from django.contrib import messages
 
 
 def index(request):
@@ -179,6 +180,7 @@ class AddLocationView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     def test_func(self):
         return len(self.request.user.user_info_set.all()) > 0
     def handle_no_permission(self):
+        messages.success(self.request, 'You must set user info before continuing.', extra_tags="exception")
         return HttpResponseRedirect(reverse('matching'))
     def form_valid(self, form):
         instance = form.save(commit=False)
