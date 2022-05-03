@@ -9,7 +9,7 @@ class DateInput(forms.DateInput):
 class TimeInput(forms.TimeInput):
     input_type = 'time'
 # Idea for changing choices: 
-class LocationForm(ModelForm):https://medium.com/swlh/django-forms-for-many-to-many-fields-d977dec4b024
+class LocationForm(ModelForm):#https://medium.com/swlh/django-forms-for-many-to-many-fields-d977dec4b024
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request')
         users = kwargs.pop('users')
