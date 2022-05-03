@@ -22,4 +22,5 @@ class Migration(migrations.Migration):
             model_name='location',
             name='user_3',
         ),
+
     ]

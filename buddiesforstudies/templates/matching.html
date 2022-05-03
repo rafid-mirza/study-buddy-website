@@ -4,7 +4,17 @@
   <head>
     {% load static %}
     <link rel="icon"href="{% static 'favicon.ico' %}">
-    <title>It's a Match!</title>
+          {% if user.is_authenticated %}
+      {% for d in data.user_info_set.all %}
+      {% for u in user.user_info_set.all %}
+      {%if d.name != u.name%}
+        <title>It's a Match!</title>
+      {%elif d.name == u.name%}
+        <title>Out of Matches :(</title>
+      {%endif%}
+      {%endfor%}
+      {%endfor%}
+
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {# Load the tag library #}
@@ -16,7 +26,7 @@
   </head>
 
   <body class="d-flex flex-column min-vh-100">
-    {% if user.is_authenticated %}
+
       <div class="p-2 bg-warning text-black text-left">
         <h1>Buddies for Studies</h1>
       </div>
@@ -43,60 +53,124 @@
           </ul>
         </div>
       </nav><!DOCTYPE html>
-
-      {% for u in user.user_info_set.all %}
-        <div class="container p-4 my-2 border">
-          <div class="container">
-            <div class="row">
-              <div class="col">
-                {% for u in user.user_info_set.all %}
-              <ul>
-                  <li> Your Name: {{u.name}}</li>
-                  <li> Your Major: {{u.major}}</li>
-                  <li> Your Year: {{u.year}}</li>
-                  <li> Your Interest: {{u.level_of_seriousness}}</li>
-                  <li> Your Matches: {{u.match_students}}</li>
-                  <li> Your Classes:
-                      <ul>
-                      {% for class in user.toggled_classes_set.all %}
-                      <li> {{class}}</li>
-                          {%endfor%}
-                  </ul>
-                  {%endfor%}
-              </ul>
-              </div>
-              <div class="col">
-                {% for d in data.user_info_set.all %}
-              <ul>
-                  <li> {{d}}</li>
-                  <li> {{d}}'s Major: {{d.major}}</li>
-                  <li> {{d}}'s Year: {{d.year}}</li>
-                  <li> {{d}}'s Interest: {{d.level_of_seriousness}}</li>
-                  <li> {{d}}'s Classes:
-                      <ul>
-                      {% for class in data.toggled_classes_set.all %}
-                      <li> {{class}}</li>
-
-                  {%endfor%}
-
-                  </ul>
-                  {%endfor%}
-              </ul>
-              </div>
-            </div>
+    {% for d in data.user_info_set.all%}
+     {% for u in user.user_info_set.all%}
+     {%if d.name != u.name%}
+    <div class="card bg-success text-white">
+        {% for d in data.user_info_set.all %}
+        {% for u in user.user_info_set.all %}
+        <div class="card-body">
+             <h1 class="text-center"> It's a Match!</h1>
+        </div>
+      </div>
+        <div class="card">
+          <div class="card-header">
+              {% for d in data.user_info_set.all%}
+              <h2  class="text-center"> {{d.name}}, ({{data.username}}) Year {{d.year}} </h2>
+              {%endfor%}
           </div>
+        </div>
+     <div class="bg-warning text-black">
+    <div class="row">
+      <div class="col">
+          <h1 class="text-center"> Major</h1>
+      </div>
+      <div class="col">
+      <h1 class="text-center"> Interest</h1>
+      </div>
+    </div>
+     <div class="row">
+         {% if d.major == u.major%}
+      <div class="col bg-success text-white">
+          <h1 class="text-center"> {{d.major}}</h1>
+      </div>
+         {%else%}
+       <div class="col bg-info text-white">
+          <h1 class="text-center"> {{d.major}}</h1>
+      </div>
+         {%endif%}
+      {% if d.level_of_seriousness == u.level_of_seriousness%}
+      <div class="col bg-success text-white">
+          <h1 class="text-center"> {{d.level_of_seriousness}}</h1>
+      </div>
+         {%else%}
+       <div class="col bg-info text-white">
+          <h1 class="text-center"> {{d.level_of_seriousness}}</h1>
+      </div>
+         {%endif%}
+    </div>
+         {%endfor%}
+         {%endfor%}
           <a href="{% url 'info' %}">Edit Info</a>
           <a href="{% url 'message_start' %}">Talk to this person!</a>
             <a href="{% url 'matching' %}">Find another match!</a>
 
-            <a href="{% url 'clear' %}">Clear all Matches</a>
+ <div class="card text-center" >
+      {% for d in data.user_info_set.all %}
+     <h1> </h1> <h1> </h1>
+      <h2 class="text-center"> You and {{d.name}} share the following classes:</h2>
+     <h1> </h1><h1> </h1>
+     {%endfor%}
+ </div>
+      <div class="card bg-success text-white">
+        <div class="text-center card-body">
+        {% for class in user.toggled_classes_set.all %}
+       {% for dclass in data.toggled_classes_set.all %}
+            {% if class.title == dclass.title%}
+            <h1> <li>{{dclass.title}}</li></h1>
+            {%endif%}
+       {%endfor%}
+            {%endfor%}
         </div>
-      {%empty%}
-        <p> You need to enter information before getting matching </p>
-        <a href="{% url 'info' %}">Enter Info</a>
-        <a href="{% url 'index' %}">Cancel</a>
+      </div>
 
+       <div class="card text-center" >
+     <h1> </h1><h1> </h1><h1> </h1>
+      <h3 class="text-center">
+          <a class="btn btn-primary" href="{% url 'info' %}" role="button">Edit your info</a>
+           <a class="btn btn-info" href="{% url 'matching' %}" role="button">Find a new buddy!</a>
+           <a class="btn btn-success" href="{% url 'all_rooms' %}" role="button">Talk to your matches!</a>
+           <a class="btn btn-dark" href="{% url 'clear' %}" role="button">Clear all matches</a>
+      </h3>
+ </div>
+     </div>
+              <footer class="footer mt-auto py-3">
+        <div class="container text-center">
+        <h1 >Your Matches:</h1>
+            {% for u in user.user_info_set.all %}
+            </h1>
+             <h3 >{{u.match_students}} </h3>
+               {%endfor%}
+        </div>
+    </footer>
+    {% else %}
+     <div class="card bg-danger text-white text-center" >
+      <h1 > You've run out of people to match with :(
+      </h1>
+     </div>
+       <div class="card text-center" >
+     <h1> </h1><h1> </h1><h1> </h1>
+      <h3 class="text-center">
+          <a class="btn btn-primary" href="{% url 'info' %}" role="button">Edit your info</a>
+           <a class="btn btn-success" href="{% url 'all_rooms' %}" role="button">Talk to your matches!</a>
+           <a class="btn btn-dark" href="{% url 'clear' %}" role="button">Clear all matches</a>
+      </h3>
+ </div>
+        </div>
+              <footer class="footer mt-auto py-3">
+        <div class="container text-center">
+        <h1 >Your Matches:</h1>
+            {% for u in user.user_info_set.all %}
+            </h1>
+             <h3 >{{u.match_students}} </h3>
+               {%endfor%}
+        </div>
+    </footer>
+
+    {%endif%}
       {%endfor%}
+    {%endfor%}
+
     {% else %}
         <div class="p-3 bg-warning text-black text-left">
             <h1>Buddies for Studies Home</h1>
@@ -108,8 +182,7 @@
             <a href="{% provider_login_url 'google' %}">Log In</a>
         </div>
 
-    {% endif %}
-
+    {%endif%}
     <footer class="footer mt-auto py-3 bg-light">
         <div class="container text-center">
         <span class="text-muted">UVA CS 3240 B-15</span>
