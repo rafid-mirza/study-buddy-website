@@ -183,6 +183,3 @@ class UntoggleClassTests(TestCase):
         choice6 = []
         response4 = self.client.post(reverse('untoggle'), {'choice': choice6})
         self.assertContains(response4, 'You did not select a class.')
-
-
-

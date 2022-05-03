@@ -300,6 +300,7 @@ class AddLocationView(LoginRequiredMixin, CreateView):
     def get_form_kwargs(self):
         kwargs = super(AddLocationView, self).get_form_kwargs()
         kwargs['request'] = self.request
+        kwargs['users'] = None
         return kwargs
 
 class UpdateLocationView(LoginRequiredMixin, UpdateView):
@@ -316,6 +317,8 @@ class UpdateLocationView(LoginRequiredMixin, UpdateView):
     def get_form_kwargs(self):
         kwargs = super(UpdateLocationView, self).get_form_kwargs()
         kwargs['request'] = self.request
+        kwargs['users'] = self.object.users.all()
+        print(self.object.users.all())
         return kwargs
 
 def remove_user(request, id):
