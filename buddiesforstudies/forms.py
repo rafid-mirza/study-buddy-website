@@ -21,7 +21,7 @@ class LocationForm(ModelForm):#https://medium.com/swlh/django-forms-for-many-to-
             test2 += users
         self.fields['users'].queryset = User.objects.filter(username__in = test2)
 
-
+#Idea for date/time widgets: https://stackoverflow.com/questions/3367091/whats-the-cleanest-simplest-to-get-running-datepicker-in-django
     class Meta:
         model = Location
         fields = ['location', 'address', 'date','time','users']
