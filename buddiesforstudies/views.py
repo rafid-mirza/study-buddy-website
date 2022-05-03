@@ -24,6 +24,7 @@ def input_information(request):
     return render(request, 'info_retrieve.html')
 
 def info_submit(request):
+    m = request.user.user_info_set.all()[0].match_students
     major_input = request.POST.get('major').upper()
     level_of_seriousness_input = request.POST.get('seriousness')
     name_input = request.POST.get('name')
@@ -50,7 +51,7 @@ def info_submit(request):
     queryset = user_info.objects.filter(user = request.user)
     if len(queryset) > 0:
         queryset[0].delete()
-    ainfo = user_info(major = major_input, level_of_seriousness = level_of_seriousness_input, name = name_input, year = year_input, user = request.user, match_students = "")
+    ainfo = user_info(major = major_input, level_of_seriousness = level_of_seriousness_input, name = name_input, year = year_input, user = request.user, match_students = m)
     ainfo.save()
     return HttpResponseRedirect(reverse('matching'))
 
@@ -165,11 +166,7 @@ def token(request):
         'identity': identity,
         'token': user_token.to_jwt().decode('utf-8')
     }
-
     return JsonResponse(response)
-
-
-
 
 class AddLocationView(LoginRequiredMixin, CreateView):
     model = Location
@@ -213,13 +210,11 @@ class DeleteLocationView(LoginRequiredMixin, DeleteView):
     template_name = "maps_delete.html"
     success_url = "/buddiesforstudies/"
 
-
-
-
-
 def major_evaluation(request, candidateusers):
     second = majormatch(request, candidateusers)
     if len(second) == 1:  # if the length of this output is only one, return it
+        user_info.objects.filter(user=request.user).update(
+            match_students=request.user.user_info_set.all()[0].match_students + second[0].username + ", ")
         return render(request, 'matching.html', {'data': second[0]})
     elif len(second) < 1:  # if none of the same major
         finalmatch = interestmatch(request, candidateusers)  # evaluate list by major
@@ -231,12 +226,12 @@ def major_evaluation(request, candidateusers):
 def majormatch(request, candiateusers):
     same_major = []
     for candidate in candiateusers:
-        if request.user.user_info_set.all()[0].major == candidate.user_info_set.all()[0].major:
-            if (request.user != candidate):
-                same_major.append(candidate)
+        if request.user.user_info_set.all()[0].major.lower() == candidate.user_info_set.all()[0].major.lower():
+            same_major.append(candidate)
     return same_major
 
 def interestmatch(request, candidateusers):
+
     closest_interest = 1000000000
     match = None
     for candidate in candidateusers:
@@ -244,9 +239,10 @@ def interestmatch(request, candidateusers):
         if similarity < closest_interest:
             closest_interest = similarity
             match = candidate
-    if (match == None): user_info.objects.filter(user = request.user).update(match_students = request.user.user_info_set.all()[0].match_students + ", " + " ")
-    else: user_info.objects.filter(user = request.user).update(match_students = request.user.user_info_set.all()[0].match_students  + match.username+ ", ")
-    return match
+    if (match != None):
+        user_info.objects.filter(user = request.user).update(match_students = request.user.user_info_set.all()[0].match_students  + match.username+ ", ")
+        return match
+    else: return request.user
 
 def clearmatches(request):
     user_info.objects.filter(user=request.user).update(match_students='')
@@ -255,28 +251,30 @@ def clearmatches(request):
 def match(request):
     if len(list(request.user.user_info_set.all())) == 0:
         return HttpResponseRedirect(reverse('info'))
-    data = list(user_info.objects.all())
-    for d in data:
-        if d.user == request.user:
-            data.remove(d)
-        if d.user.username in request.user.user_info_set.all()[0].match_students:
-            data.remove(d)
+    data2 = list(user_info.objects.all())
+    matches = request.user.user_info_set.all()[0].match_students.split(", ")
+    if (request.user not in matches): matches.append(request.user.username)
+    data = []
+    for d in data2:
+        if (d.user.username not in matches): data.append(d)
+
     class_count = {}
-    for d in data: # for all the users that have entered info # don't compare against self
-        if d.user != request.user:
-            for c in d.user.toggled_classes_set.all(): # for every class they've inputted
-                for cl in request.user.toggled_classes_set.all(): # if there's a match with the user's class
-                    if c.title == cl.title:
-                        if c.user not in class_count.keys():# if this user does not have classes yet, initialize count
-                            class_count[c.user] = 1
-                        else:
-                            class_count[c.user] = class_count.get(c.user,0) +1 #otherwise, increase it by 1
+    for d in data: # for all the users that have entered info
+        for c in d.user.toggled_classes_set.all(): # for every class they've inputted
+            for cl in request.user.toggled_classes_set.all(): # if there's a match with the user's class
+                if c.title == cl.title:
+                    if c.user not in class_count.keys():# if this user does not have classes yet, initialize count
+                        class_count[c.user] = 1
+                    else:
+                        class_count[c.user] = class_count.get(c.user,0) +1 #otherwise, increase it by 1
 
     if len(class_count) == 1:
+
         user_info.objects.filter(user = request.user).update(match_students = request.user.user_info_set.all()[0].match_students  + list(class_count.keys())[0].username +", " )
         return render(request, 'matching.html', {'data': list(class_count.keys())[0]})
 
-    if len(class_count) > 1:# if more than one class
+    elif len(class_count) > 1:# if more than one class
+
         same_classes = True
         i = 1
         classes = list(class_count.values())# evaluate all the counts
@@ -301,13 +299,12 @@ def match(request):
             else:# otherwise, match based on major
                return major_evaluation(request, most_class)
     else:
+
         # otherwise, there are no classes, so let's evaluate by major
         noclass_candidates = []
         for d in data:
-            if (d.user!= request.user):
-                noclass_candidates.append(d.user)
+            if (d.user.username not in matches): noclass_candidates.append(d.user)
 
-        second = majormatch(request, noclass_candidates)
-        return major_evaluation(request, second)
+        return major_evaluation(request, noclass_candidates)
 
 
