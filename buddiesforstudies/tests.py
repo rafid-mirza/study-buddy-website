@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model, authenticate
 from django.urls import reverse
-from .models import jsonData, toggled_classes, classes, Room
+from .models import jsonData, toggled_classes, classes, user_info, Room
 
 
 class PracticeTests(TestCase):
@@ -216,3 +216,76 @@ class RoomDetailTest(TestCase):
 
         self.assertContains(response, room_1.name)
         self.assertContains(response, room_1.description)
+
+class MatchingTests(TestCase):
+
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(username='test', password='test', email='t@st.com')
+        self.user.save()
+        self.user = get_user_model().objects.create_user(username='test1', password='test1', email='t1@st.com')
+        self.user.save()
+        data = jsonData(label="classes")
+        data.save()
+
+    def tearDown(self):
+        self.user.delete()
+
+    def test_match_with_similar_person(self):
+        self.client.login(username='test', password='test')
+        title = 'CS 3240'
+        self.client.post(reverse('submit'), {'title': title})
+        choice = ['CS 3240']
+        self.client.post(reverse('toggle'), {'choice': choice})
+        self.client.post(reverse('info_submit'),
+                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test', 'year': '3'})
+
+        self.client.login(username='test1', password='test1')
+        title = 'CS 3240'
+        self.client.post(reverse('submit'), {'title': title})
+        choice = ['CS 3240']
+        self.client.post(reverse('toggle'), {'choice': choice})
+        self.client.post(reverse('info_submit'),
+                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test1', 'year': '3'})
+
+        url = reverse('matching')
+        response = self.client.get(url)
+        self.assertContains(response, 'test')
+
+    def test_match_with_most_similar_person(self):
+        self.user = get_user_model().objects.create_user(username='test2', password='test2', email='t2@st.com')
+        self.user.save()
+        self.client.login(username='test', password='test')
+        title = 'CS 3240'
+        self.client.post(reverse('submit'), {'title': title})
+        choice = ['CS 3240']
+        self.client.post(reverse('toggle'), {'choice': choice})
+        self.client.post(reverse('info_submit'),
+                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test', 'year': '3'})
+
+        self.client.login(username='test1', password='test1')
+        title = 'CS 3240'
+        self.client.post(reverse('submit'), {'title': title})
+        title = 'CS 4102'
+        self.client.post(reverse('submit'), {'title': title})
+        choice = ['CS 3240']
+        self.client.post(reverse('toggle'), {'choice': choice})
+        choice = ['CS 4102']
+        self.client.post(reverse('toggle'), {'choice': choice})
+        self.client.post(reverse('info_submit'),
+                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test1', 'year': '3'})
+
+        self.client.login(username='test2', password='test2')
+        title = 'CS 3240'
+        self.client.post(reverse('submit'), {'title': title})
+        title = 'CS 4102'
+        self.client.post(reverse('submit'), {'title': title})
+        choice = ['CS 3240']
+        self.client.post(reverse('toggle'), {'choice': choice})
+        choice = ['CS 4102']
+        self.client.post(reverse('toggle'), {'choice': choice})
+        self.client.post(reverse('info_submit'),
+                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test1', 'year': '3'})
+
+        url = reverse('matching')
+        response = self.client.get(url)
+        self.assertContains(response, 'test1')
