@@ -26,7 +26,8 @@ def input_information(request):
     return render(request, 'info_retrieve.html')
 
 def info_submit(request):
-    m = request.user.user_info_set.all()[0].match_students
+    if len(request.user.user_info_set.all()) == 0: m = ""
+    else: m = request.user.user_info_set.all()[0].match_students
     major_input = request.POST.get('major').title()
     level_of_seriousness_input = request.POST.get('seriousness')
     name_input = request.POST.get('name')

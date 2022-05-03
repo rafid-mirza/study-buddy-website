@@ -205,7 +205,7 @@ class MatchingTests(TestCase):
         choice = ['CS 3240']
         self.client.post(reverse('toggle'), {'choice': choice})
         self.client.post(reverse('info_submit'),
-                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test', 'year': '3'})
+                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test', 'year': '3', 'match_students': ""})
 
         self.client.login(username='test1', password='test1')
         title = 'CS 3240'
@@ -213,7 +213,7 @@ class MatchingTests(TestCase):
         choice = ['CS 3240']
         self.client.post(reverse('toggle'), {'choice': choice})
         self.client.post(reverse('info_submit'),
-                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test1', 'year': '3'})
+                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test1', 'year': '3', 'match_students': ""})
 
         url = reverse('matching')
         response = self.client.get(url)
@@ -228,7 +228,7 @@ class MatchingTests(TestCase):
         choice = ['CS 3240']
         self.client.post(reverse('toggle'), {'choice': choice})
         self.client.post(reverse('info_submit'),
-                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test', 'year': '3'})
+                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test', 'year': '3', 'match_students': ""})
 
         self.client.login(username='test1', password='test1')
         title = 'CS 3240'
@@ -240,7 +240,7 @@ class MatchingTests(TestCase):
         choice = ['CS 4102']
         self.client.post(reverse('toggle'), {'choice': choice})
         self.client.post(reverse('info_submit'),
-                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test1', 'year': '3'})
+                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test1', 'year': '3', 'match_students': ""})
 
         self.client.login(username='test2', password='test2')
         title = 'CS 3240'
@@ -252,7 +252,7 @@ class MatchingTests(TestCase):
         choice = ['CS 4102']
         self.client.post(reverse('toggle'), {'choice': choice})
         self.client.post(reverse('info_submit'),
-                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test1', 'year': '3'})
+                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test1', 'year': '3', 'match_students': ""})
 
         url = reverse('matching')
         response = self.client.get(url)

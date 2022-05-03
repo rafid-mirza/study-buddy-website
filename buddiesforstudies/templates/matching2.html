@@ -34,7 +34,7 @@
               <a class="nav-link" href="{% url 'classes_view' %}">Classes</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'all_rooms' %}">Messages</a>
+              <a class="nav-link" href="{% url 'message_start' %}">Messages</a>
             </li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
@@ -55,7 +55,7 @@
           <a class="btn btn-primary" href="{% url 'info' %}" role="button">Edit your info</a>
           {%for u in user.user_info_set.all%}
           {%if u.match_students != " "%}
-           <a class="btn btn-success" href="{% url 'all_rooms' %}" role="button">Talk to your matches!</a>
+           <a class="btn btn-success" href="{% url 'message_start' %}" role="button">Talk to your matches!</a>
           {%endif%}
           {%endfor%}
            <a class="btn btn-info" href="{% url 'matching' %}" role="button">Find another match!</a>
