@@ -32,8 +32,8 @@ def info_submit(request):
     level_of_seriousness_input = request.POST.get('seriousness')
     name_input = request.POST.get('name')
     year_input = request.POST.get('year')
-    if request.POST.get('major').upper():
-        major_input = request.POST.get('major').upper()
+    if request.POST.get('major').title():
+        major_input = request.POST.get('major').title()
     else:
         return render(request, 'info_retrieve.html', {'error_message': "A major must be entered."})
     if request.POST.get('seriousness'):
