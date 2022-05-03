@@ -45,6 +45,22 @@ def info_submit(request):
         return render(request, 'info_retrieve.html', {'error_message': "Name cannot exceed 128 characters"})
     if len(major_input) > 128:
         return render(request, 'info_retrieve.html', {'error_message': "Major title cannot exceed 128 characters"})
+    is_a_number = False
+    try:
+        float(name_input)
+        is_a_number = True
+    except ValueError:
+        pass
+    if is_a_number:
+       return render(request, 'info_retrieve.html', {'error_message': "A valid name must be entered."})
+    is_a_number2 = False
+    try:
+        float(major_input)
+        is_a_number2 = True
+    except ValueError:
+        pass
+    if is_a_number2:
+        return render(request, 'info_retrieve.html', {'error_message': "A valid major must be entered."})
     not_a_number = False
     try:
         float(year_input)
@@ -116,6 +132,7 @@ def toggle_class(request):
 
 
 def toggle(request):
+    class_already_toggled = False
     if request.method == 'POST':
         choice = request.POST.getlist('choice')
         if not choice:
@@ -123,11 +140,17 @@ def toggle(request):
         else:
             for i in choice:
                 if toggled_classes.objects.filter(title=i,user=request.user).exists():
-                    return render(request, 'toggle_class.html', {'error_message': "One or more of these classes has already been toggled."})
+                    class_already_toggled = True
+                    break
                 else:
+                    class_already_toggled = False
+            if class_already_toggled == True:
+                return render(request, 'toggle_class.html', {'error_message': "One or more of these classes has already been toggled."})
+            else:
+                for i in choice:
                     class_to_toggle = toggled_classes(title=i, user=request.user)
                     class_to_toggle.save()
-            return HttpResponseRedirect(reverse('classes_view'))
+                return HttpResponseRedirect(reverse('classes_view'))
 
 
 def untoggle_class(request):
