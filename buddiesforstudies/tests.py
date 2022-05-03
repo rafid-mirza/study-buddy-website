@@ -9,6 +9,7 @@ class PracticeTests(TestCase):
     def test_practice(self):
         self.assertIs(True, True)
 
+# tests for signing in were based on the following tutorial https://mkdev.me/en/posts/how-to-cover-django-application-with-unit-tests
 class SigninTest(TestCase):
 
     def setUp(self):
@@ -332,3 +333,42 @@ class LocationsTests(TestCase):
         response = self.client.get(url)
 
         self.assertContains(response, 'You do not have any sessions scheduled')
+
+    def test_edit_studdy_session(self):
+        data = jsonData(label="classes")
+        data.save()
+        self.client.login(username='test', password='test')
+        title = 'CS 3240'
+        self.client.post(reverse('submit'), {'title': title})
+        choice = ['CS 3240']
+        self.client.post(reverse('toggle'), {'choice': choice})
+        self.client.post(reverse('info_submit'),
+                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test', 'year': '3', 'match_students': ""})
+
+        self.client.login(username='test1', password='test1')
+        title = 'CS 3240'
+        self.client.post(reverse('submit'), {'title': title})
+        choice = ['CS 3240']
+        self.client.post(reverse('toggle'), {'choice': choice})
+        self.client.post(reverse('info_submit'),
+                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test1', 'year': '3', 'match_students': ""})
+
+        url = reverse('matching')
+        response = self.client.get(url)
+
+        self.client.login(username='test', password='test')
+        usera = self.user
+
+        self.client.login(username='test1', password='test1')
+        userb = self.user
+
+        l = Location(location='38.038903204641144,-78.51953506456474',
+                     address='104 Midmont Lane, Charlottesville, Virginia 22903, United States', date='2022-10-10',
+                     time='22:10:00')
+        l.save()
+        l.users.add(usera)
+        l.users.add(userb)
+
+        url = reverse('update', args=[l.pk])
+        response = self.client.get(url)
+        self.assertContains(response, 'test')
