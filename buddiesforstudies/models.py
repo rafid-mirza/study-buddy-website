@@ -5,7 +5,7 @@ import requests
 from django import forms
 from mapbox_location_field.models import LocationField, AddressAutoHiddenField
 
-
+#How to use django-mapbox-location-field: https://pypi.org/project/django-mapbox-location-field/
 class Location(models.Model):
     location = LocationField( map_attrs={"center": (-78.50, 38.04)})
     address = AddressAutoHiddenField(default = "")
