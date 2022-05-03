@@ -21,7 +21,7 @@
     <body class="d-flex flex-column min-vh-100">
 
             <div class="p-2 bg-warning text-black text-left">
-                <h1>Buddies for Studdies</h1>
+                <h1>Buddies for Studies</h1>
             </div>
         
             <!-- A grey horizontal navbar that becomes vertical on small screens -->
@@ -33,10 +33,10 @@
                             <a class="nav-link" href="{% url 'index' %}">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'classes_view' %}">Classes</a>
+                            <a class="nav-link" href="{% url 'classes_view' %}">My Classes</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'all_rooms' %}">Messages</a>
+                            <a class="nav-link" href="{% url 'message_start' %}">Messages</a>
                         </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
@@ -46,7 +46,13 @@
                     </ul>
                 </div>
             </nav>
-
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == "exception success" %}
+                        <p>{{ message }}</p>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
             <div class="container p-4 my-2 border">
                 <ul>
                     {% for u in user.user_info_set.all %}
@@ -59,14 +65,14 @@
                                 </li> <li>
                                     My Major: <input type="text" name="major" value="{{u.major}}">
                                 </li> <li>
-                                    My Year: <input type="text" name="year" value="{{u.year}}">
+                                    My Year (1-4): <input type="text" name="year" value="{{u.year}}">
                                 </li> <li>
                                     My seriousness (1 (not serious)-10 (serious)): <input type="text" name="seriousness" value="{{u.level_of_seriousness}}">
                                 </li>
                             </ul>
                             <input type="submit" value="Confirm!">
                         </form>
-                        <a href="{% url 'index' %}">Cancel</a>
+                        <a href="{% url 'matching' %}">Cancel</a>
                     {% empty %}
                         <form action = "{% url 'info_submit' %}" method = "POST">
                             {% csrf_token %}
@@ -84,7 +90,7 @@
                                 </ul>
                             <input type="submit" value="Confirm!">
                         </form>
-                        <a href="{% url 'index' %}">Cancel</a>
+                        <a href="{% url 'matching' %}">Cancel</a>
                     {% endfor %}
                 </ul>
             </div>
@@ -92,7 +98,7 @@
         {% else %}
             <title>Login</title>
             <div class="p-3 bg-warning text-black text-left">
-                <h1>Buddies for Studdies Home</h1>
+                <h1>Buddies for Studies Home</h1>
             </div>
             <div class="container p-4 my-2 border">
                 <header>

@@ -4,7 +4,7 @@
   <head>
     {% load static %}
     <link rel="icon"href="{% static 'favicon.ico' %}">
-    <title>Buddies for Studdies</title>
+    <title>Buddies for Studies</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {# Load the tag library #}
@@ -34,13 +34,13 @@
                 <a class="nav-link" href="{% url 'index' %}">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'classes_view' %}">Classes</a>
+              <a class="nav-link" href="{% url 'classes_view' %}">My Classes</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'matching2' %}">Find Matches</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'all_rooms' %}">Messages</a>
+              <a class="nav-link" href="{% url 'message_start' %}">Messages</a>
             </li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
@@ -58,7 +58,7 @@
 
     {% else %}
       <div class="p-3 bg-warning text-black text-left">
-        <h1>Buddies for Studdies Home</h1>
+        <h1>Buddies for Studies Home</h1>
       </div>
       <div class="container p-4 my-2 border">
         <header>

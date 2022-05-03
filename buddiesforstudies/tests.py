@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model, authenticate
 from django.urls import reverse
-from .models import jsonData, toggled_classes, classes, Room
+from .models import jsonData, toggled_classes, classes, Location
 
 
 class PracticeTests(TestCase):
@@ -184,35 +184,151 @@ class UntoggleClassTests(TestCase):
         response4 = self.client.post(reverse('untoggle'), {'choice': choice6})
         self.assertContains(response4, 'You did not select a class.')
 
-class HomePageTest(TestCase):
-    def test_all_rooms_are_rendered_in_homepage(self):
-        Room.objects.create(
-            name='room 1',
-            slug='room-1',
-            description='This is the 1st room'
-        )
-        Room.objects.create(
-            name='room 2',
-            slug='room-2',
-            description='This is the 2nd room'
-        )
 
-        response = self.client.get('/buddiesforstudies/rooms/')
+class MatchingTests(TestCase):
 
-        self.assertContains(response, 'room 1')
-        self.assertContains(response, 'room 2')
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(username='test', password='test', email='t@st.com')
+        self.user.save()
+        self.user = get_user_model().objects.create_user(username='test1', password='test1', email='t1@st.com')
+        self.user.save()
+        data = jsonData(label="classes")
+        data.save()
+
+    def tearDown(self):
+        self.user.delete()
+
+    def test_match_with_similar_person(self):
+        self.client.login(username='test', password='test')
+        title = 'CS 3240'
+        self.client.post(reverse('submit'), {'title': title})
+        choice = ['CS 3240']
+        self.client.post(reverse('toggle'), {'choice': choice})
+        self.client.post(reverse('info_submit'),
+                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test', 'year': '3'})
+
+        self.client.login(username='test1', password='test1')
+        title = 'CS 3240'
+        self.client.post(reverse('submit'), {'title': title})
+        choice = ['CS 3240']
+        self.client.post(reverse('toggle'), {'choice': choice})
+        self.client.post(reverse('info_submit'),
+                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test1', 'year': '3'})
+
+        url = reverse('matching')
+        response = self.client.get(url)
+        self.assertContains(response, 'test')
+
+    def test_match_with_most_similar_person(self):
+        self.user = get_user_model().objects.create_user(username='test2', password='test2', email='t2@st.com')
+        self.user.save()
+        self.client.login(username='test', password='test')
+        title = 'CS 3240'
+        self.client.post(reverse('submit'), {'title': title})
+        choice = ['CS 3240']
+        self.client.post(reverse('toggle'), {'choice': choice})
+        self.client.post(reverse('info_submit'),
+                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test', 'year': '3'})
+
+        self.client.login(username='test1', password='test1')
+        title = 'CS 3240'
+        self.client.post(reverse('submit'), {'title': title})
+        title = 'CS 4102'
+        self.client.post(reverse('submit'), {'title': title})
+        choice = ['CS 3240']
+        self.client.post(reverse('toggle'), {'choice': choice})
+        choice = ['CS 4102']
+        self.client.post(reverse('toggle'), {'choice': choice})
+        self.client.post(reverse('info_submit'),
+                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test1', 'year': '3'})
+
+        self.client.login(username='test2', password='test2')
+        title = 'CS 3240'
+        self.client.post(reverse('submit'), {'title': title})
+        title = 'CS 4102'
+        self.client.post(reverse('submit'), {'title': title})
+        choice = ['CS 3240']
+        self.client.post(reverse('toggle'), {'choice': choice})
+        choice = ['CS 4102']
+        self.client.post(reverse('toggle'), {'choice': choice})
+        self.client.post(reverse('info_submit'),
+                         {'major': 'Computer Science', 'seriousness': "9", 'name': 'test1', 'year': '3'})
+
+        url = reverse('matching')
+        response = self.client.get(url)
+        self.assertContains(response, 'test1')
 
 
-class RoomDetailTest(TestCase):
+class LocationsTests(TestCase):
 
-    def test_room_details_are_present_in_room_page(self):
-        room_1 = Room.objects.create(
-            name='room X',
-            slug='room-x',
-            description='This is the X-room'
-        )
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(username='test', password='test', email='t@st.com')
+        self.user.save()
+        self.user = get_user_model().objects.create_user(username='test1', password='test1', email='t1@st.com')
+        self.user.save()
 
-        response = self.client.get('/buddiesforstudies/rooms/{}/'.format(room_1.slug))
+    
+    def tearDown(self):
+        self.user.delete()
 
-        self.assertContains(response, room_1.name)
-        self.assertContains(response, room_1.description)
+    def test_add_studdy_session(self):
+        self.client.login(username='test', password='test')
+        usera = self.user
+
+        self.client.login(username='test1', password='test1')
+        userb = self.user
+
+        l = Location(location='38.038903204641144,-78.51953506456474',
+                     address='104 Midmont Lane, Charlottesville, Virginia 22903, United States', date='2022-10-10',
+                     time='22:10:00')
+        l.save()
+        l.users.add(usera)
+        l.users.add(userb)
+
+        url = reverse('index')
+        response = self.client.get(url)
+        self.assertContains(response, 'test')
+
+    def test_remove_studdy_session(self):
+        self.client.login(username='test', password='test')
+        usera = self.user
+
+        self.client.login(username='test1', password='test1')
+        userb = self.user
+
+        l = Location(location='38.038903204641144,-78.51953506456474',
+                     address='104 Midmont Lane, Charlottesville, Virginia 22903, United States', date='2022-10-10',
+                     time='22:10:00')
+        l.save()
+        l.users.add(usera)
+        l.users.add(userb)
+
+        url = reverse('remove', args=[l.id])
+        self.client.get(url)
+        url = reverse('index')
+        response = self.client.get(url)
+
+        self.assertContains(response, 'You do not have any sessions scheduled')
+    
+    def test_delete_studdy_session(self):
+        self.client.login(username='test', password='test')
+        usera = self.user
+
+        self.client.login(username='test1', password='test1')
+        userb = self.user
+
+        l = Location(location='38.038903204641144,-78.51953506456474',
+                     address='104 Midmont Lane, Charlottesville, Virginia 22903, United States', date='2022-10-10',
+                     time='22:10:00')
+        l.save()
+        l.users.add(usera)
+        l.users.add(userb)
+
+        url = reverse('delete', args=[l.pk])
+        self.client.get(url)
+
+        self.client.login(username='test', password='test')
+        url = reverse('index')
+        response = self.client.get(url)
+
+        self.assertContains(response, 'You do not have any sessions scheduled')
