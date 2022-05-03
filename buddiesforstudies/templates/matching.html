@@ -33,7 +33,7 @@
               <a class="nav-link" href="{% url 'classes_view' %}">Classes</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'all_rooms' %}">Messages</a>
+              <a class="nav-link" href="{% url 'message_start' %}">Messages</a>
             </li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
@@ -86,7 +86,7 @@
             </div>
           </div>
           <a href="{% url 'info' %}">Edit Info</a>
-          <a href="{% url 'all_rooms' %}">Talk to this person!</a>
+          <a href="{% url 'message_start' %}">Talk to this person!</a>
             <a href="{% url 'matching' %}">Find another match!</a>
 
             <a href="{% url 'clear' %}">Clear all Matches</a>

@@ -1,12 +1,13 @@
-from django.shortcuts import render
+from django import views
+from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
-from django.conf import settings
-from twilio.jwt.access_token import AccessToken
-from twilio.jwt.access_token.grants import ChatGrant
-from .models import classes, jsonData, toggled_classes, Room
+import os
+
+from dotenv import load_dotenv
+from twilio.rest import Client
 from django.views.generic import CreateView, UpdateView, DeleteView
-from .models import classes, jsonData, toggled_classes, Location, user_info
+from .models import classes, jsonData, toggled_classes, Location, user_info, participant, conversation
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import LocationForm
 from django.db.models import Q
@@ -81,7 +82,7 @@ def remove_class(request):
 
 def remove(request):
     try:
-        aclass = classes.objects.get(title = request.POST['choice'], user = request.user)
+        aclass = classes.objects.get(title=request.POST['choice'], user=request.user)
         aclass2 = toggled_classes.objects.get(title=request.POST['choice'], user=request.user)
     except (KeyError, classes.DoesNotExist):
         # Redisplay the class removing form.
@@ -132,43 +133,157 @@ def untoggle(request):
             return HttpResponseRedirect(reverse('classes_view'))
 
 
-def all_rooms(request):
-    rooms = Room.objects.all()
-    return render(request, 'room_index.html', {'rooms': rooms})
+def messages_home(request, current_chat=None, error_message=None):
+    load_dotenv()
+    account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+    auth_token = os.getenv('TWILIO_AUTH_TOKEN')
+    client = Client(account_sid, auth_token)
+    configuration = client.conversations \
+        .configuration() \
+        .update(default_chat_service_sid=os.getenv('TWILIO_CHAT_SERVICE_SID'))
+
+    # Checks if user already exists in models, and if it does it gets the user id
+    user_id = None
+    for member in participant.objects.all():
+        if member.identity == request.user.username:
+            user_id = member.user_id
+    if user_id is None:
+        for second_check in client.conversations.users.list():
+            if second_check.identity == request.user.username:
+                user_id = second_check.sid
+                temp_participant = participant(user_id=user_id, identity=request.user.username)
+                temp_participant.save()
+
+    if user_id is None:
+        user = client.conversations.users.create(identity=request.user.username)
+        temp_participant = participant(user_id=user.sid, identity=request.user.username)
+        temp_participant.save()
+
+    # Checks for chats the user is in
+    chats = []
+    for chat in conversation.objects.all():
+        for member in chat.participants.all():
+            if member.identity is request.user.username:
+                chats.append(chat)
+    chat_messages = []
+    chat_participants = []
+    other_users = []
+    current_chat_name = ''
+    if chats:
+        if request.POST.get('current_chat') is None:
+            current_chat = chats[0]
+        current_chat_name = current_chat.friendly_name
+        participants = client.conversations.conversations(current_chat.chat_id).participants.list()
+        for chatMember in participants:
+            chat_participants.append(chatMember['identity'])
+        users = user_info.user.objects.all()
+        for a_user in users:
+            if a_user not in participants:
+                other_users.append(a_user.username)
+        messages = client.conversations.conversations(chats[0].chat_id).messages.list()
+        for message in messages['messages']:
+            chat_messages.append([message['body'], message['author'], message['date_updated']])
+    if error_message is not None:
+        return render(request, 'messages.html', {'conversations': chats, 'messages': chat_messages,
+                                                'participants': chat_participants, 'current_chat': current_chat_name,
+                                                'other_users': other_users, 'error_message': error_message})
+    return render(request, 'messages.html', {'conversations': chats, 'messages': chat_messages,
+                                            'participants': chat_participants, 'current_chat': current_chat_name,
+                                            'other_users': other_users})
 
 
-def room_detail(request, slug):
-    room = Room.objects.get(slug=slug)
-    return render(request, 'room_detail.html', {'room': room})
+def refresh_feed(request):
+    current_chat_name = request.POST.get('current_chat')
+    if current_chat_name is None:
+        return redirect(messages_home)
+    else:
+        for convo in conversation.objects.all():
+            if convo.friendly_name == current_chat_name:
+                current_chat = convo
+                break
+        return redirect(messages_home, current_chat=current_chat)
 
 
-def token(request):
-    identity = request.user.username
-    device_id = request.GET.get('device', 'default')  # unique device ID
 
-    account_sid = settings.TWILIO_ACCOUNT_SID
-    api_key = settings.TWILIO_API_KEY
-    api_secret = settings.TWILIO_API_SECRET
-    chat_service_sid = settings.TWILIO_CHAT_SERVICE_SID
+def create_chat_one(request):
+    load_dotenv()
+    account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+    auth_token = os.getenv('TWILIO_AUTH_TOKEN')
+    client = Client(account_sid, auth_token)
 
-    user_token = AccessToken(account_sid, api_key, api_secret, identity=identity)
+    new_chat_name = request.POST.get('new_chat')
+    error_message = None
+    if new_chat_name is None:
+        return redirect(messages_home)
+    else:
+        for convo in conversation.objects.all():
+            if convo.friendly_name == new_chat_name:
+                error_message = "That name already exists"
+                break
+    if error_message is not None:
+        redirect(messages_home, error_message=error_message)
 
-    # Create a unique endpoint ID for the device
-    endpoint = "MyDjangoChatRoom:{0}:{1}".format(identity, device_id)
-
-    if chat_service_sid:
-        chat_grant = ChatGrant(endpoint_id=endpoint,
-                               service_sid=chat_service_sid)
-        user_token.add_grant(chat_grant)
-
-    response = {
-        'identity': identity,
-        'token': user_token.to_jwt().decode('utf-8')
-    }
-
-    return JsonResponse(response)
+    chat = client.conversations.conversations.create(friendly_name=new_chat_name)
+    chat_object = conversation(friendly_name=new_chat_name, chat_id=chat.sid)
+    chat_object.save()
+    member = client.conversations.conversations(chat_object.chat_id).participants.create(
+        identity=request.user.username)
+    try:
+        chat_object.participants.add(participant.objects.get(identity=request.user.username))
+    except (KeyError, participant.DoesNotExist):
+        temp_participant = participant(identity=member.identity, user_id=member.sid)
+        chat_object.participants.add(temp_participant)
+    chat_object.save()
+    return redirect(messages_home, current_chat=chat_object)
 
 
+def send_message(request):
+    load_dotenv()
+    account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+    auth_token = os.getenv('TWILIO_AUTH_TOKEN')
+    client = Client(account_sid, auth_token)
+    current_chat_name = request.POST.get('current_chat')
+    error_message = None
+    for convo in conversation.objects.all():
+        if convo.friendly_name == current_chat_name:
+            current_chat = convo
+            break
+
+    message_text = request.POST.get('message_text')
+
+    message = client.conversations.conversations(current_chat.chat_id).messages.create(
+        author=request.user.username, body=message_text)
+
+    return redirect(messages_home, current_chat=current_chat)
+
+
+def change_chats(request):
+    name_of_chat = request.POST.get('chat_name')
+    for chat in conversation.objects.all():
+        if chat.friendly_name == name_of_chat:
+            current_chat = chat
+    return redirect(messages_home, current_chat=current_chat)
+
+
+def add_participant(request):
+    load_dotenv()
+    account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+    auth_token = os.getenv('TWILIO_AUTH_TOKEN')
+    client = Client(account_sid, auth_token)
+    name_of_chat = request.POST.get('current_chat')
+    new_participant = request.POST.get('participant_text')
+    current_chat = None
+
+    for chat in conversation.objects.all():
+        if chat.friendly_name == name_of_chat:
+            current_chat = chat
+            break
+    if current_chat is None:
+        redirect(messages_home)
+    else:
+        if not (new_participant is None or new_participant == "" or new_participant == "---"):
+            client.conversations.conversations(current_chat.chat_id).participants.create(identity=new_participant)
+        return redirect(messages_home, current_chat=current_chat)
 
 
 class AddLocationView(LoginRequiredMixin, CreateView):
@@ -312,5 +427,4 @@ def match(request):
 
         second = majormatch(request, noclass_candidates)
         return major_evaluation(request, second)
-
 
