@@ -1,3 +1,4 @@
+from django import views
 from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
@@ -180,10 +181,10 @@ def messages_home(request, current_chat=None, error_message=None):
         for message in messages['messages']:
             chat_messages.append([message['body'], message['author'], message['date_updated']])
     if error_message is not None:
-        return render(render, 'messages.html', {'conversations': chats, 'messages': chat_messages,
+        return render(request, 'messages.html', {'conversations': chats, 'messages': chat_messages,
                                                 'participants': chat_participants, 'current_chat': current_chat_name,
                                                 'other_users': other_users, 'error_message': error_message})
-    return render(render, 'messages.html', {'conversations': chats, 'messages': chat_messages,
+    return render(request, 'messages.html', {'conversations': chats, 'messages': chat_messages,
                                             'participants': chat_participants, 'current_chat': current_chat_name,
                                             'other_users': other_users})
 
@@ -191,13 +192,13 @@ def messages_home(request, current_chat=None, error_message=None):
 def refresh_feed(request):
     current_chat_name = request.POST.get('current_chat')
     if current_chat_name is None:
-        return redirect('messages_home')
+        return redirect(messages_home)
     else:
         for convo in conversation.objects.all():
             if convo.friendly_name == current_chat_name:
                 current_chat = convo
                 break
-        return redirect('messages_home', current_chat=current_chat)
+        return redirect(messages_home, current_chat=current_chat)
 
 
 
@@ -210,14 +211,14 @@ def create_chat_one(request):
     new_chat_name = request.POST.get('new_chat')
     error_message = None
     if new_chat_name is None:
-        return redirect('messages_home')
+        return redirect(messages_home)
     else:
         for convo in conversation.objects.all():
             if convo.friendly_name == new_chat_name:
                 error_message = "That name already exists"
                 break
     if error_message is not None:
-        redirect('messages_home', error_message=error_message)
+        redirect(messages_home, error_message=error_message)
 
     chat = client.conversations.conversations.create(friendly_name=new_chat_name)
     chat_object = conversation(friendly_name=new_chat_name, chat_id=chat.sid)
@@ -230,7 +231,7 @@ def create_chat_one(request):
         temp_participant = participant(identity=member.identity, user_id=member.sid)
         chat_object.participants.add(temp_participant)
     chat_object.save()
-    return redirect('messages_home', current_chat=chat_object)
+    return redirect(messages_home, current_chat=chat_object)
 
 
 def send_message(request):
@@ -250,7 +251,7 @@ def send_message(request):
     message = client.conversations.conversations(current_chat.chat_id).messages.create(
         author=request.user.username, body=message_text)
 
-    return redirect('messages_home', current_chat=current_chat)
+    return redirect(messages_home, current_chat=current_chat)
 
 
 def change_chats(request):
@@ -258,7 +259,7 @@ def change_chats(request):
     for chat in conversation.objects.all():
         if chat.friendly_name == name_of_chat:
             current_chat = chat
-    return redirect('messages_home', current_chat=current_chat)
+    return redirect(messages_home, current_chat=current_chat)
 
 
 def add_participant(request):
@@ -275,11 +276,11 @@ def add_participant(request):
             current_chat = chat
             break
     if current_chat is None:
-        redirect('messages_home')
+        redirect(messages_home)
     else:
         if not (new_participant is None or new_participant == "" or new_participant == "---"):
             client.conversations.conversations(current_chat.chat_id).participants.create(identity=new_participant)
-        return redirect('messages_home', current_chat=current_chat)
+        return redirect(messages_home, current_chat=current_chat)
 
 
 class AddLocationView(LoginRequiredMixin, CreateView):
