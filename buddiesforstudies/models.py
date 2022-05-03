@@ -73,7 +73,7 @@ class participant(models.Model):
 
 
 class conversation(models.Model):
-    friendly_name = models.CharField(max_length=128)
+    friendly_name = models.CharField()
     chat_id = models.CharField(max_length=128)
     participants = models.ManyToManyField(participant, verbose_name="List of Chat Members")
 
