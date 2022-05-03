@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model, authenticate
 from django.urls import reverse
-from .models import jsonData, toggled_classes, classes, Room
+from .models import jsonData, toggled_classes, classes
 
 
 class PracticeTests(TestCase):
@@ -203,16 +203,3 @@ class HomePageTest(TestCase):
         self.assertContains(response, 'room 2')
 
 
-class RoomDetailTest(TestCase):
-
-    def test_room_details_are_present_in_room_page(self):
-        room_1 = Room.objects.create(
-            name='room X',
-            slug='room-x',
-            description='This is the X-room'
-        )
-
-        response = self.client.get('/buddiesforstudies/rooms/{}/'.format(room_1.slug))
-
-        self.assertContains(response, room_1.name)
-        self.assertContains(response, room_1.description)
