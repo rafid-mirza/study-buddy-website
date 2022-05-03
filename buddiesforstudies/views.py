@@ -328,7 +328,7 @@ def add_participant(request):
         if not (new_participant is None or new_participant == "" or new_participant == "---"):
             client.conversations.conversations(current_chat.chat_id).participants.create(identity=new_participant)
         return redirect(messages_home, current_chat=current_chat)
-
+# UserPassesTestMixin how to use taken from: https://stackoverflow.com/questions/65241141/django-userpassestestmixin-confusion-questions
 # Class based views for location tutorial: https://youtu.be/m3efqF9abyg
 class AddLocationView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Location
