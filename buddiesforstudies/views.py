@@ -329,7 +329,7 @@ def add_participant(request):
             client.conversations.conversations(current_chat.chat_id).participants.create(identity=new_participant)
         return redirect(messages_home, current_chat=current_chat)
 
-
+# Class based views for location tutorial: https://youtu.be/m3efqF9abyg
 class AddLocationView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Location
     form_class = LocationForm
@@ -351,7 +351,7 @@ class AddLocationView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         kwargs['request'] = self.request
         kwargs['users'] = None
         return kwargs
-
+#Idea for how to use manytomany field form: https://medium.com/swlh/django-forms-for-many-to-many-fields-d977dec4b024
 class UpdateLocationView(LoginRequiredMixin, UpdateView):
     model = Location
     form_class = LocationForm
