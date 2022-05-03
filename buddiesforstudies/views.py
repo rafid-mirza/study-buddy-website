@@ -8,9 +8,10 @@ from dotenv import load_dotenv
 from twilio.rest import Client
 from django.views.generic import CreateView, UpdateView, DeleteView
 from .models import classes, jsonData, toggled_classes, Location, user_info, participant, conversation
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .forms import LocationForm
 from django.db.models import Q
+from django.contrib import messages
 
 
 def index(request):
@@ -324,11 +325,16 @@ def add_participant(request):
         return redirect(messages_home, current_chat=current_chat)
 
 
-class AddLocationView(LoginRequiredMixin, CreateView):
+class AddLocationView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Location
     form_class = LocationForm
     template_name = "maps.html"
     success_url = "/buddiesforstudies/"
+    def test_func(self):
+        return len(self.request.user.user_info_set.all()) > 0
+    def handle_no_permission(self):
+        messages.success(self.request, 'You must set user info before continuing.', extra_tags="exception")
+        return HttpResponseRedirect(reverse('matching'))
     def form_valid(self, form):
         instance = form.save(commit=False)
         instance.save()

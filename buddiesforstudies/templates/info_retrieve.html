@@ -43,7 +43,13 @@
                     </ul>
                 </div>
             </nav>
-
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == "exception success" %}
+                        <p>{{ message }}</p>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
             <div class="container p-4 my-2 border">
                 <ul>
                     {% for u in user.user_info_set.all %}
