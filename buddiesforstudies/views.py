@@ -423,8 +423,6 @@ def match2(request):
         return HttpResponseRedirect(reverse('info'))
     matches = request.user.user_info_set.all()[0].match_students.replace(" ", "").split(",")
     if len(matches) == 0: return render(request, 'matching.html', {'data': matches})
-    last_match = matches[-1]
-    last_user = User.objects.filter(username = last_match)
     return render(request, 'matching2.html')
 
 
